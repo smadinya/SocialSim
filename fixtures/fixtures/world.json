@@ -1,0 +1,191 @@
+{
+  "turn": 6,
+  "clock": "Day 3 — 14:25",
+  "rngSeed": 20260822,
+  "playerId": "you",
+  "scene": {
+    "location": "Courtyard — West Wing",
+    "presentCharacters": ["you", "alice", "dana"]
+  },
+  "characters": {
+    "you": {
+      "id": "you",
+      "name": "You",
+      "traits": ["observer", "curious"],
+      "state": {
+        "mood": "curious",
+        "emotions": { "tension": 30, "warmth": 45 }
+      },
+      "relationships": {
+        "alice": { "trust": 50, "affection": 48, "respect": 50, "fear": 5 }, 
+        "bob": { "trust": 42, "affection": 40, "respect": 45, "fear": 12 },
+        "calum": { "trust": 48, "affection": 45, "respect": 46, "fear": 6 },
+        "dana": { "trust": 52, "affection": 50, "respect": 50, "fear": 5 }
+      },
+      "memories": [
+        {
+          "id": "mem-you-1",
+          "turn": 1,
+          "actor": "alice",
+          "target": "you",
+          "description": "Alice pulled you aside and said she no longer knows who leaked her plan.",
+          "tags": ["arrival", "trust", "alice"],
+          "importance": 0.6
+        }
+      ],
+      "beliefs": [
+        {
+          "id": "bel-you-1",
+          "description": "Something happened between Alice and Bob before you arrived.",
+          "confidence": 0.55
+        }
+      ],
+      "goals": ["Figure out what really happened between Alice and Bob"]
+    },
+    "alice": {
+      "id": "alice",
+      "name": "Alice",
+      "traits": ["loyal", "proud"],
+      "state": {
+        "mood": "guarded",
+        "emotions": { "hurt": 60, "resolve": 55 }
+      },
+      "relationships": {
+        "you": { "trust": 55, "affection": 50, "respect": 45, "fear": 5 },
+        "bob": { "trust": 18, "affection": 40, "respect": 35, "fear": 20 },
+        "calum": { "trust": 60, "affection": 45, "respect": 50, "fear": 8 },
+        "dana": { "trust": 75, "affection": 68, "respect": 60, "fear": 5 }
+      },
+      "memories": [
+        {
+          "id": "mem-alice-1",
+          "turn": 0,
+          "actor": "bob",
+          "target": "alice",
+          "description": "Bob leaked the plan Alice trusted him with, then denied it to her face.",
+          "tags": ["betrayal", "bob", "secret"],
+          "importance": 0.95
+        },
+        {
+          "id": "mem-alice-2",
+          "turn": 4,
+          "actor": "dana",
+          "target": "alice",
+          "description": "Dana promised to help Alice find out who really talked.",
+          "tags": ["alliance", "dana"],
+          "importance": 0.7
+        }
+      ],
+      "beliefs": [
+        {
+          "id": "bel-alice-1",
+          "description": "Bob is the one who leaked the plan.",
+          "confidence": 0.65
+        }
+      ],
+      "goals": ["Find out who leaked the plan", "Decide whether Bob can be forgiven"]
+    },
+    "bob": {
+      "id": "bob",
+      "name": "Bob",
+      "traits": ["ambitious", "charming", "gossip"],
+      "state": {
+        "mood": "smooth",
+        "emotions": { "guilt": 35, "confidence": 65 }
+      },
+      "relationships": {
+        "you": { "trust": 40, "affection": 35, "respect": 42, "fear": 18 },
+        "alice": { "trust": 45, "affection": 30, "respect": 40, "fear": 25 },
+        "calum": { "trust": 55, "affection": 72, "respect": 50, "fear": 10 },
+        "dana": { "trust": 30, "affection": 25, "respect": 38, "fear": 35 }
+      },
+      "memories": [
+        {
+          "id": "mem-bob-1",
+          "turn": 0,
+          "actor": "bob",
+          "target": "alice",
+          "description": "Bob told a rival what Alice was planning, hoping to get ahead.",
+          "tags": ["betrayal", "secret", "alice"],
+          "importance": 0.9
+        }
+      ],
+      "beliefs": [
+        {
+          "id": "bel-bob-1",
+          "description": "Nobody can prove it was him.",
+          "confidence": 0.6
+        }
+      ],
+      "goals": ["Win Calum over", "Keep the leak buried"]
+    },
+    "calum": {
+      "id": "calum",
+      "name": "Calum",
+      "traits": ["cautious", "kind"],
+      "state": {
+        "mood": "relaxed",
+        "emotions": { "ease": 55, "curiosity": 40 }
+      },
+      "relationships": {
+        "you": { "trust": 50, "affection": 45, "respect": 48, "fear": 6 },
+        "alice": { "trust": 58, "affection": 50, "respect": 52, "fear": 8 },
+        "bob": { "trust": 60, "affection": 55, "respect": 58, "fear": 12 },
+        "dana": { "trust": 52, "affection": 48, "respect": 50, "fear": 10 }
+      },
+      "memories": [
+        {
+          "id": "mem-calum-1",
+          "turn": 3,
+          "actor": "bob",
+          "target": "calum",
+          "description": "Bob has been unusually friendly with Calum lately.",
+          "tags": ["bob", "attention"],
+          "importance": 0.5
+        }
+      ],
+      "beliefs": [
+        {
+          "id": "bel-calum-1",
+          "description": "The group feels tense but no one will say why.",
+          "confidence": 0.5
+        }
+      ],
+      "goals": ["Keep the peace", "Avoid taking sides"]
+    },
+    "dana": {
+      "id": "dana",
+      "name": "Dana",
+      "traits": ["blunt", "loyal"],
+      "state": {
+        "mood": "wary",
+        "emotions": { "suspicion": 60, "loyalty": 70 }
+      },
+      "relationships": {
+        "you": { "trust": 48, "affection": 42, "respect": 45, "fear": 8 },
+        "alice": { "trust": 78, "affection": 70, "respect": 65, "fear": 4 },
+        "bob": { "trust": 22, "affection": 15, "respect": 30, "fear": 30 },
+        "calum": { "trust": 55, "affection": 50, "respect": 52, "fear": 10 }
+      },
+      "memories": [
+        {
+          "id": "mem-dana-1",
+          "turn": 2,
+          "actor": "bob",
+          "target": "dana",
+          "description": "Dana caught Bob changing his story about the plan.",
+          "tags": ["bob", "suspicion", "secret"],
+          "importance": 0.8
+        }
+      ],
+      "beliefs": [
+        {
+          "id": "bel-dana-1",
+          "description": "Bob is hiding something and Calum is being pulled into it.",
+          "confidence": 0.6
+        }
+      ],
+      "goals": ["Protect Alice", "Expose whoever leaked the plan"]
+    }
+  }
+}
