@@ -30,7 +30,7 @@ export default function CharacterInspector({
     <section className="panel inspector">
       <div className="panel-head">
         <span>Inspector</span>
-        <span style={{ color: "var(--muted)" }}>who's who</span>
+        <span style={{ color: "var(--muted)" }}>who&apos;s who</span>
       </div>
       <div className="panel-body">
         <div className="who-tabs">
