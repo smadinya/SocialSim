@@ -16,7 +16,7 @@ export default function EventFeed({ feed }: Props) {
       <div className="panel-body">
         {feed.length === 0 && (
           <div className="feed-empty">
-            Nothing's reached you yet. Things happen off scene as turns pass.
+            Nothing&apos;s reached you yet. Things happen off scene as turns pass.
           </div>
         )}
         {feed.map((item) => (
