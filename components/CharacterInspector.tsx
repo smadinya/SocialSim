@@ -21,7 +21,14 @@ export default function CharacterInspector({
   const present = world.scene.presentCharacters;
   const character = world.characters[selectedId];
 
-  const relTargets = present.filter((id) => id !== selectedId);
+  // All of them, on scene first. Filtering to the scene made the Bob-Calum
+  // relationship unviewable while the feed reported it moving every other turn:
+  // dead information in one panel, invisible consequence in another.
+  const relTargets = ids
+    .filter((id) => id !== selectedId && character?.relationships[id])
+    .sort(
+      (a, b) => Number(present.includes(b)) - Number(present.includes(a)),
+    );
   const recentMemories = [...(character?.memories || [])]
     .sort((a, b) => b.turn - a.turn)
     .slice(0, 4);
@@ -66,19 +73,19 @@ export default function CharacterInspector({
               </div>
             ))}
 
-            <div className="insp-label">
-              Relationships {relTargets.length ? "(on scene)" : ""}
-            </div>
+            <div className="insp-label">Relationships</div>
             {relTargets.length === 0 && (
-              <div className="feed-empty">No one else is on scene.</div>
+              <div className="feed-empty">Nobody else, yet.</div>
             )}
             {relTargets.map((id) => {
               const rel = character.relationships[id];
               if (!rel) return null;
+              const onScene = present.includes(id);
               return (
-                <div className="rel-row" key={id}>
+                <div className={`rel-row ${onScene ? "" : "offscene"}`} key={id}>
                   <div className="rel-name">
                     <span>{world.characters[id].name}</span>
+                    {!onScene && <span className="rel-where">off scene</span>}
                   </div>
                   {REL_FIELDS.map((field) => (
                     <TrustBar key={field} field={field} value={rel[field]} />

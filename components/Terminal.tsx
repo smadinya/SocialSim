@@ -8,6 +8,7 @@ import { MENU_MOVE_IDS, metaFor } from "@/lib/moveMeta";
 import { runTick } from "@/lib/mockEngine";
 import { interpretInput } from "@/lib/interpret";
 import { postInterpret, postTurn } from "@/lib/api";
+import type { AiMode } from "@/lib/api";
 import { MOVE_IDS } from "@sim/moves/catalog";
 import {
   clearSession,
@@ -50,7 +51,11 @@ export default function Terminal({ fixture }: Props) {
 
   const [selectedMove, setSelectedMove] = useState<MoveId>(MENU_MOVE_IDS[0]);
   const [selectedTarget, setSelectedTarget] = useState<string | null>(null);
-  const [useServer, setUseServer] = useState(false);
+  // On by default: `performMove` and `handleCustom` both catch and re-run the
+  // tick locally, so a missing key or a dead network degrades on its own. Off
+  // by default meant a first-time player only ever saw stub templates.
+  const [useServer, setUseServer] = useState(true);
+  const [aiMode, setAiMode] = useState<AiMode | null>(null);
 
   const stateRef = useRef(state);
   stateRef.current = state;
@@ -66,9 +71,10 @@ export default function Terminal({ fixture }: Props) {
     }
   }, [selectedTarget, targets]);
 
-  useEffect(() => {
-    if (!state.busy) saveSession(state.world);
-  }, [state.busy, state.world]);
+  // No autosave: it wrote the manual slot on every state change and nothing
+  // read it at boot (`initState` always takes the fixture), so its only
+  // observable effect was that `load` returned the state you were already in.
+  // Resume-on-boot needs a separate key, and nobody has asked for it.
 
   useEffect(() => {
     const plan = state.pending;
@@ -124,11 +130,15 @@ export default function Terminal({ fixture }: Props) {
     dispatch({ type: "beginTurn", move });
     const snapshot = stateRef.current.world;
     try {
-      const result = useServer
-        ? await postTurn(snapshot, playerId, move)
-        : runTick(snapshot, playerId, move);
-      dispatch({ type: "applyResult", result });
+      if (useServer) {
+        const { result, mode } = await postTurn(snapshot, playerId, move);
+        setAiMode(mode);
+        dispatch({ type: "applyResult", result });
+      } else {
+        dispatch({ type: "applyResult", result: runTick(snapshot, playerId, move) });
+      }
     } catch {
+      setAiMode("mock");
       const result = runTick(snapshot, playerId, move);
       dispatch({ type: "applyResult", result });
     }
@@ -167,7 +177,7 @@ export default function Terminal({ fixture }: Props) {
       result = interpretInput(text, playerId, LEGAL_IDS, snapshot);
     }
 
-    dispatch({ type: "understood", text: result.understoodAs });
+    dispatch({ type: "understood", text: result.understoodAs, ok: result.ok });
 
     if (result.ok) {
       await sleep(520);
@@ -248,6 +258,7 @@ export default function Terminal({ fixture }: Props) {
           <span className="spacer" />
           <button onClick={() => setUseServer((v) => !v)}>
             server: {useServer ? "on" : "off"}
+            {useServer && aiMode === "mock" ? " (stub)" : ""}
           </button>
           <button onClick={() => saveSession(state.world)}>save</button>
           <button onClick={doLoad}>load</button>
@@ -275,6 +286,7 @@ export default function Terminal({ fixture }: Props) {
           onCommit={commit}
           busy={state.busy}
           understoodAs={state.understoodAs}
+          understoodOk={state.understoodOk}
           onCustom={handleCustom}
         />
 

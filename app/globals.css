@@ -326,6 +326,12 @@ body {
   font-weight: 400;
 }
 
+/* A refusal is not a confirmation. "I understood that as: Bob isn't here."
+   put an error message in the field that means the opposite. */
+.understood.refused b {
+  color: var(--muted);
+}
+
 .spinner {
   display: inline-block;
   color: var(--amber);
@@ -388,6 +394,17 @@ body {
   margin-bottom: 10px;
 }
 
+.rel-row.offscene {
+  opacity: 0.6;
+}
+
+.rel-row .rel-where {
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
 .rel-row .rel-name {
   color: var(--ink);
   display: flex;
@@ -396,7 +413,10 @@ body {
 
 .rel-bars {
   display: grid;
-  grid-template-columns: 62px 1fr 34px;
+  /* `AFFECTION` at 11px uppercase with 0.1em tracking doesn't fit 62px and
+     wrapped to "AFFECTIO / N". max-content fits the longest label by
+     construction and survives an axis being renamed. */
+  grid-template-columns: max-content 1fr 34px;
   gap: 8px;
   align-items: center;
   margin-top: 3px;

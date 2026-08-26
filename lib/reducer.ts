@@ -43,6 +43,8 @@ export interface UiState {
   status: string;
   busy: boolean;
   understoodAs: string | null;
+  /** false = the interpreter refused; the same slot renders as a warning. */
+  understoodOk: boolean;
   pending: RevealPlan | null;
   revealCount: number;
 }
@@ -57,7 +59,7 @@ export type Action =
   | { type: "applyDelta"; from: CharacterId; to: CharacterId; field: RelationshipField; after: number }
   | { type: "addFeed"; event: SimEvent }
   | { type: "endReveal" }
-  | { type: "understood"; text: string | null }
+  | { type: "understood"; text: string | null; ok: boolean }
   | { type: "setBusy"; busy: boolean }
   | { type: "replaceWorld"; world: WorldState; status: string };
 
@@ -88,6 +90,7 @@ export function initState({ world, playerId }: InitArgs): UiState {
     status: "Pick a move, or type a custom action.",
     busy: false,
     understoodAs: null,
+    understoodOk: true,
     pending: null,
     revealCount: 0,
   };
@@ -123,6 +126,12 @@ function buildPlan(
 ): RevealPlan {
   const steps: RevealStep[] = [];
   const utterancesLeft = [...result.utterances];
+
+  // Presence changes bracket the tick: you see someone walk in before they
+  // start talking, and walk out after they've spoken.
+  for (const event of result.events) {
+    if (event.type === "arrival") steps.push({ kind: "feed", event });
+  }
 
   for (const resolved of result.log) {
     const move = resolved.move;
@@ -161,6 +170,10 @@ function buildPlan(
     }
   }
 
+  for (const event of result.events) {
+    if (event.type === "departure") steps.push({ kind: "feed", event });
+  }
+
   return { id, steps };
 }
 
@@ -190,6 +203,11 @@ export function reducer(state: UiState, action: Action): UiState {
         busy: true,
         status: "Resolving turn…",
         scene: [...state.scene, optimisticLine],
+        // It's about the text that was typed, so it goes stale the moment the
+        // player does anything else. It used to sit pinned under the input
+        // across every following menu move.
+        understoodAs: null,
+        understoodOk: true,
       };
     }
 
@@ -266,7 +284,7 @@ export function reducer(state: UiState, action: Action): UiState {
       };
 
     case "understood":
-      return { ...state, understoodAs: action.text };
+      return { ...state, understoodAs: action.text, understoodOk: action.ok };
 
     case "setBusy":
       return { ...state, busy: action.busy };
@@ -291,6 +309,7 @@ export function reducer(state: UiState, action: Action): UiState {
         ],
         feed: [],
         understoodAs: null,
+        understoodOk: true,
         pending: null,
         busy: false,
         status: action.status,

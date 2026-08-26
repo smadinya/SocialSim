@@ -5,12 +5,15 @@ import { useState } from "react";
 interface Props {
   busy: boolean;
   understoodAs: string | null;
+  /** false = the interpreter refused. No turn was spent. */
+  understoodOk: boolean;
   onSubmit: (text: string) => void;
 }
 
 export default function CustomActionInput({
   busy,
   understoodAs,
+  understoodOk,
   onSubmit,
 }: Props) {
   const [text, setText] = useState("");
@@ -42,11 +45,16 @@ export default function CustomActionInput({
           {busy ? <span className="spinner">…</span> : "Send"}
         </button>
       </div>
-      {understoodAs && (
-        <div className="understood">
-          I understood that as: <b>{understoodAs}</b>
-        </div>
-      )}
+      {understoodAs &&
+        (understoodOk ? (
+          <div className="understood">
+            I understood that as: <b>{understoodAs}</b>
+          </div>
+        ) : (
+          <div className="understood refused" role="status">
+            <b>{understoodAs}</b> Nothing happened — try again.
+          </div>
+        ))}
     </div>
   );
 }
