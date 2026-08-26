@@ -16,9 +16,10 @@
     "plugins": [{ "name": "next" }],
     "paths": {
       "@/*": ["./*"],
-      "@sim/*": ["./sim/src/*"]
+      "@sim/*": ["./sim/src/*"],
+      "@ai/*": ["./ai/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "sim/**/*.test.ts"]
+  "exclude": ["node_modules", "ai/**/*.test.ts", "lib/**/*.test.ts", "sim/**/*.test.ts"]
 }

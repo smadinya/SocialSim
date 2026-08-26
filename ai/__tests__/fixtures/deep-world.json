@@ -1,0 +1,1291 @@
+{
+  "turn": 12,
+  "clock": "Day 3 — 16:40",
+  "rngSeed": 20260822,
+  "playerId": "you",
+  "scene": {
+    "location": "Courtyard — West Wing",
+    "presentCharacters": [
+      "you",
+      "alice",
+      "calum",
+      "dana"
+    ]
+  },
+  "characters": {
+    "you": {
+      "id": "you",
+      "name": "You",
+      "traits": [
+        "observer",
+        "curious"
+      ],
+      "state": {
+        "mood": "curious",
+        "emotions": {
+          "tension": 30,
+          "warmth": 45
+        }
+      },
+      "relationships": {
+        "alice": {
+          "trust": 51,
+          "affection": 49,
+          "respect": 53,
+          "fear": 7,
+          "baseline": {
+            "trust": 51,
+            "affection": 49,
+            "respect": 53,
+            "fear": 7
+          },
+          "lastDelta": {},
+          "flags": []
+        },
+        "bob": {
+          "trust": 41,
+          "affection": 37,
+          "respect": 44,
+          "fear": 13,
+          "baseline": {
+            "trust": 41,
+            "affection": 37,
+            "respect": 44,
+            "fear": 13
+          },
+          "lastDelta": {},
+          "flags": []
+        },
+        "calum": {
+          "trust": 47,
+          "affection": 46,
+          "respect": 49,
+          "fear": 6,
+          "baseline": {
+            "trust": 47,
+            "affection": 46,
+            "respect": 49,
+            "fear": 6
+          },
+          "lastDelta": {},
+          "flags": []
+        },
+        "dana": {
+          "trust": 54,
+          "affection": 52,
+          "respect": 56,
+          "fear": 4,
+          "baseline": {
+            "trust": 54,
+            "affection": 52,
+            "respect": 56,
+            "fear": 4
+          },
+          "lastDelta": {},
+          "flags": []
+        }
+      },
+      "memories": [
+        {
+          "id": "mem-you-0",
+          "turn": 0,
+          "actor": "alice",
+          "description": "Alice pulled you aside and said she no longer knows who leaked her plan.",
+          "tags": [
+            "arrival",
+            "trust",
+            "alice"
+          ],
+          "importance": 0.6,
+          "valence": 0.2,
+          "tier": "direct",
+          "accurate": true,
+          "target": "you"
+        },
+        {
+          "id": "mem-you-1",
+          "turn": 1,
+          "actor": "bob",
+          "description": "You saw Bob and Calum talking with their backs to the courtyard.",
+          "tags": [
+            "bob",
+            "calum",
+            "attention"
+          ],
+          "importance": 0.4,
+          "valence": 0.0,
+          "tier": "direct",
+          "accurate": true,
+          "target": "calum"
+        },
+        {
+          "id": "mem-you-2",
+          "turn": 2,
+          "actor": "dana",
+          "description": "Dana told you to watch what Bob does, not what he says.",
+          "tags": [
+            "dana",
+            "bob",
+            "suspicion"
+          ],
+          "importance": 0.5,
+          "valence": -0.2,
+          "tier": "direct",
+          "accurate": true,
+          "target": "you"
+        },
+        {
+          "id": "mem-you-3",
+          "turn": 3,
+          "actor": "calum",
+          "description": "Calum asked you what was going on and you did not have an answer.",
+          "tags": [
+            "calum",
+            "askforhelp",
+            "respect"
+          ],
+          "importance": 0.35,
+          "valence": 0.1,
+          "tier": "direct",
+          "accurate": true,
+          "target": "you"
+        },
+        {
+          "id": "mem-you-4",
+          "turn": 4,
+          "actor": "bob",
+          "description": "Bob greeted you a little too warmly.",
+          "tags": [
+            "greet",
+            "bob",
+            "affection"
+          ],
+          "importance": 0.3,
+          "valence": -0.1,
+          "tier": "direct",
+          "accurate": true,
+          "target": "you"
+        },
+        {
+          "id": "mem-you-5",
+          "turn": 5,
+          "actor": "you",
+          "description": "You defended Alice in front of the others.",
+          "tags": [
+            "defend",
+            "alice",
+            "affection"
+          ],
+          "importance": 0.65,
+          "valence": 0.6,
+          "tier": "direct",
+          "accurate": true,
+          "target": "alice"
+        },
+        {
+          "id": "mem-you-6",
+          "turn": 6,
+          "actor": "alice",
+          "description": "Alice mentioned a plan she had trusted someone with, and stopped there.",
+          "tags": [
+            "alice",
+            "secret",
+            "trust"
+          ],
+          "importance": 0.55,
+          "valence": -0.1,
+          "tier": "direct",
+          "accurate": true,
+          "target": "you"
+        },
+        {
+          "id": "mem-you-7",
+          "turn": 7,
+          "actor": "dana",
+          "description": "Dana insulted Bob and nobody stopped her.",
+          "tags": [
+            "insult",
+            "dana",
+            "bob"
+          ],
+          "importance": 0.45,
+          "valence": 0.0,
+          "tier": "direct",
+          "accurate": true,
+          "target": "bob"
+        },
+        {
+          "id": "mem-you-8",
+          "turn": 8,
+          "actor": "calum",
+          "description": "Calum refused to take sides in front of you.",
+          "tags": [
+            "calum",
+            "refuse"
+          ],
+          "importance": 0.4,
+          "valence": -0.1,
+          "tier": "direct",
+          "accurate": true
+        },
+        {
+          "id": "mem-you-9",
+          "turn": 9,
+          "actor": "bob",
+          "description": "Bob offered to explain himself if you would hear him out.",
+          "tags": [
+            "bob",
+            "apologize",
+            "trust"
+          ],
+          "importance": 0.5,
+          "valence": 0.0,
+          "tier": "direct",
+          "accurate": true,
+          "target": "you"
+        }
+      ],
+      "beliefs": [
+        {
+          "id": "bel-you-1",
+          "subject": "bob",
+          "axis": "trust",
+          "description": "Something happened between Alice and Bob before you arrived.",
+          "confidence": 0.55
+        }
+      ],
+      "goals": [
+        "Figure out what really happened between Alice and Bob"
+      ]
+    },
+    "alice": {
+      "id": "alice",
+      "name": "Alice",
+      "traits": [
+        "loyal",
+        "proud"
+      ],
+      "state": {
+        "mood": "guarded",
+        "emotions": {
+          "hurt": 60,
+          "resolve": 55
+        }
+      },
+      "relationships": {
+        "you": {
+          "trust": 58,
+          "affection": 53,
+          "respect": 47,
+          "fear": 9,
+          "baseline": {
+            "trust": 58,
+            "affection": 53,
+            "respect": 47,
+            "fear": 9
+          },
+          "lastDelta": {},
+          "flags": []
+        },
+        "bob": {
+          "trust": 18,
+          "affection": 31,
+          "respect": 36,
+          "fear": 21,
+          "baseline": {
+            "trust": 18,
+            "affection": 31,
+            "respect": 36,
+            "fear": 21
+          },
+          "lastDelta": {},
+          "flags": [
+            "betrayed"
+          ]
+        },
+        "calum": {
+          "trust": 61,
+          "affection": 44,
+          "respect": 51,
+          "fear": 8,
+          "baseline": {
+            "trust": 61,
+            "affection": 44,
+            "respect": 51,
+            "fear": 8
+          },
+          "lastDelta": {},
+          "flags": []
+        },
+        "dana": {
+          "trust": 76,
+          "affection": 69,
+          "respect": 63,
+          "fear": 3,
+          "baseline": {
+            "trust": 76,
+            "affection": 69,
+            "respect": 63,
+            "fear": 3
+          },
+          "lastDelta": {},
+          "flags": []
+        }
+      },
+      "memories": [
+        {
+          "id": "mem-alice-0",
+          "turn": 0,
+          "actor": "bob",
+          "description": "Bob leaked the plan Alice trusted him with, then denied it to her face.",
+          "tags": [
+            "betrayal",
+            "bob",
+            "secret"
+          ],
+          "importance": 0.95,
+          "valence": -0.9,
+          "tier": "direct",
+          "accurate": true,
+          "target": "alice"
+        },
+        {
+          "id": "mem-alice-1",
+          "turn": 1,
+          "actor": "dana",
+          "description": "Dana sat with Alice for an hour after the argument and said nothing.",
+          "tags": [
+            "alliance",
+            "dana",
+            "comfort"
+          ],
+          "importance": 0.6,
+          "valence": 0.5,
+          "tier": "direct",
+          "accurate": true,
+          "target": "alice"
+        },
+        {
+          "id": "mem-alice-2",
+          "turn": 2,
+          "actor": "calum",
+          "description": "Calum greeted Alice in the corridor and kept walking.",
+          "tags": [
+            "greet",
+            "calum"
+          ],
+          "importance": 0.25,
+          "valence": 0.2,
+          "tier": "direct",
+          "accurate": true,
+          "target": "alice"
+        },
+        {
+          "id": "mem-alice-3",
+          "turn": 3,
+          "actor": "bob",
+          "description": "Bob left a gift outside Alice's door that she did not open.",
+          "tags": [
+            "givegift",
+            "bob",
+            "affection"
+          ],
+          "importance": 0.45,
+          "valence": -0.2,
+          "tier": "direct",
+          "accurate": true,
+          "target": "alice"
+        },
+        {
+          "id": "mem-alice-4",
+          "turn": 4,
+          "actor": "dana",
+          "description": "Dana promised to find out who really talked.",
+          "tags": [
+            "alliance",
+            "dana",
+            "trust"
+          ],
+          "importance": 0.7,
+          "valence": 0.6,
+          "tier": "direct",
+          "accurate": true,
+          "target": "alice"
+        },
+        {
+          "id": "mem-alice-5",
+          "turn": 5,
+          "actor": "you",
+          "description": "You asked Alice what actually happened and waited for the answer.",
+          "tags": [
+            "askforhelp",
+            "you",
+            "respect"
+          ],
+          "importance": 0.4,
+          "valence": 0.1,
+          "tier": "direct",
+          "accurate": true,
+          "target": "alice"
+        },
+        {
+          "id": "mem-alice-6",
+          "turn": 6,
+          "actor": "alice",
+          "description": "Alice confronted Bob and he changed the subject twice.",
+          "tags": [
+            "confront",
+            "bob",
+            "fear"
+          ],
+          "importance": 0.75,
+          "valence": -0.6,
+          "tier": "direct",
+          "accurate": true,
+          "target": "bob"
+        },
+        {
+          "id": "mem-alice-7",
+          "turn": 7,
+          "actor": "calum",
+          "description": "Calum said he would rather not take sides.",
+          "tags": [
+            "calum",
+            "withdraw"
+          ],
+          "importance": 0.3,
+          "valence": -0.1,
+          "tier": "direct",
+          "accurate": true
+        },
+        {
+          "id": "mem-alice-8",
+          "turn": 8,
+          "actor": "dana",
+          "description": "Dana cut Bob down in front of everyone at breakfast.",
+          "tags": [
+            "insult",
+            "dana",
+            "bob",
+            "affection"
+          ],
+          "importance": 0.55,
+          "valence": 0.3,
+          "tier": "direct",
+          "accurate": true,
+          "target": "bob"
+        },
+        {
+          "id": "mem-alice-9",
+          "turn": 9,
+          "actor": "bob",
+          "description": "Alice heard that Bob has been courting Calum.",
+          "tags": [
+            "bob",
+            "calum",
+            "propose"
+          ],
+          "importance": 0.5,
+          "valence": -0.4,
+          "tier": "told",
+          "accurate": true,
+          "target": "calum"
+        },
+        {
+          "id": "mem-alice-10",
+          "turn": 10,
+          "actor": "you",
+          "description": "You defended Alice when Bob pushed back.",
+          "tags": [
+            "defend",
+            "you",
+            "affection"
+          ],
+          "importance": 0.65,
+          "valence": 0.7,
+          "tier": "direct",
+          "accurate": true,
+          "target": "alice"
+        }
+      ],
+      "beliefs": [
+        {
+          "id": "bel-alice-1",
+          "subject": "bob",
+          "axis": "trust",
+          "description": "Bob is the one who leaked the plan.",
+          "confidence": 0.65
+        },
+        {
+          "id": "bel-alice-2",
+          "subject": "dana",
+          "axis": "affection",
+          "description": "Dana will stay on her side whatever happens.",
+          "confidence": 0.8
+        }
+      ],
+      "goals": [
+        "Find out who leaked the plan",
+        "Decide whether Bob can be forgiven"
+      ]
+    },
+    "bob": {
+      "id": "bob",
+      "name": "Bob",
+      "traits": [
+        "ambitious",
+        "charming",
+        "gossip"
+      ],
+      "state": {
+        "mood": "smooth",
+        "emotions": {
+          "guilt": 35,
+          "confidence": 65
+        }
+      },
+      "relationships": {
+        "you": {
+          "trust": 43,
+          "affection": 34,
+          "respect": 42,
+          "fear": 17,
+          "baseline": {
+            "trust": 43,
+            "affection": 34,
+            "respect": 42,
+            "fear": 17
+          },
+          "lastDelta": {},
+          "flags": []
+        },
+        "alice": {
+          "trust": 46,
+          "affection": 29,
+          "respect": 39,
+          "fear": 26,
+          "baseline": {
+            "trust": 46,
+            "affection": 29,
+            "respect": 39,
+            "fear": 26
+          },
+          "lastDelta": {},
+          "flags": []
+        },
+        "calum": {
+          "trust": 57,
+          "affection": 73,
+          "respect": 54,
+          "fear": 11,
+          "baseline": {
+            "trust": 57,
+            "affection": 73,
+            "respect": 54,
+            "fear": 11
+          },
+          "lastDelta": {},
+          "flags": [
+            "allied"
+          ]
+        },
+        "dana": {
+          "trust": 28,
+          "affection": 24,
+          "respect": 37,
+          "fear": 34,
+          "baseline": {
+            "trust": 28,
+            "affection": 24,
+            "respect": 37,
+            "fear": 34
+          },
+          "lastDelta": {},
+          "flags": []
+        }
+      },
+      "memories": [
+        {
+          "id": "mem-bob-0",
+          "turn": 0,
+          "actor": "bob",
+          "description": "Bob told a rival what Alice was planning, hoping to get ahead.",
+          "tags": [
+            "betrayal",
+            "secret",
+            "alice"
+          ],
+          "importance": 0.9,
+          "valence": -0.3,
+          "tier": "direct",
+          "accurate": true,
+          "target": "alice"
+        },
+        {
+          "id": "mem-bob-1",
+          "turn": 1,
+          "actor": "bob",
+          "description": "Bob denied the leak to Alice's face and watched her decide whether to believe him.",
+          "tags": [
+            "confront",
+            "alice",
+            "secret"
+          ],
+          "importance": 0.8,
+          "valence": -0.5,
+          "tier": "direct",
+          "accurate": true,
+          "target": "alice"
+        },
+        {
+          "id": "mem-bob-2",
+          "turn": 2,
+          "actor": "bob",
+          "description": "Bob gave Calum something he had been saving.",
+          "tags": [
+            "givegift",
+            "calum",
+            "affection"
+          ],
+          "importance": 0.5,
+          "valence": 0.6,
+          "tier": "direct",
+          "accurate": true,
+          "target": "calum"
+        },
+        {
+          "id": "mem-bob-3",
+          "turn": 3,
+          "actor": "dana",
+          "description": "Dana caught Bob changing his story about the plan.",
+          "tags": [
+            "dana",
+            "suspicion",
+            "secret"
+          ],
+          "importance": 0.7,
+          "valence": -0.7,
+          "tier": "direct",
+          "accurate": true,
+          "target": "bob"
+        },
+        {
+          "id": "mem-bob-4",
+          "turn": 4,
+          "actor": "calum",
+          "description": "Calum laughed at one of Bob's jokes and meant it.",
+          "tags": [
+            "calum",
+            "greet",
+            "affection"
+          ],
+          "importance": 0.3,
+          "valence": 0.4,
+          "tier": "direct",
+          "accurate": true,
+          "target": "bob"
+        },
+        {
+          "id": "mem-bob-5",
+          "turn": 5,
+          "actor": "bob",
+          "description": "Bob suggested to Calum that they were on the same side.",
+          "tags": [
+            "propose",
+            "calum",
+            "trust"
+          ],
+          "importance": 0.6,
+          "valence": 0.5,
+          "tier": "direct",
+          "accurate": true,
+          "target": "calum"
+        },
+        {
+          "id": "mem-bob-6",
+          "turn": 6,
+          "actor": "alice",
+          "description": "Alice stopped speaking to Bob entirely.",
+          "tags": [
+            "alice",
+            "withdraw",
+            "trust"
+          ],
+          "importance": 0.65,
+          "valence": -0.6,
+          "tier": "direct",
+          "accurate": true,
+          "target": "bob"
+        },
+        {
+          "id": "mem-bob-7",
+          "turn": 7,
+          "actor": "you",
+          "description": "You asked Bob about the leak and he heard the question underneath it.",
+          "tags": [
+            "you",
+            "askforhelp",
+            "respect"
+          ],
+          "importance": 0.55,
+          "valence": -0.3,
+          "tier": "direct",
+          "accurate": true,
+          "target": "bob"
+        },
+        {
+          "id": "mem-bob-8",
+          "turn": 8,
+          "actor": "dana",
+          "description": "Dana insulted Bob publicly and nobody defended him.",
+          "tags": [
+            "insult",
+            "dana",
+            "affection"
+          ],
+          "importance": 0.6,
+          "valence": -0.8,
+          "tier": "direct",
+          "accurate": true,
+          "target": "bob"
+        },
+        {
+          "id": "mem-bob-9",
+          "turn": 9,
+          "actor": "bob",
+          "description": "Bob apologized to Alice and she did not answer.",
+          "tags": [
+            "apologize",
+            "alice",
+            "trust"
+          ],
+          "importance": 0.7,
+          "valence": -0.5,
+          "tier": "direct",
+          "accurate": true,
+          "target": "alice"
+        }
+      ],
+      "beliefs": [
+        {
+          "id": "bel-bob-1",
+          "subject": "alice",
+          "axis": "fear",
+          "description": "Nobody can prove it was him.",
+          "confidence": 0.6
+        },
+        {
+          "id": "bel-bob-2",
+          "subject": "calum",
+          "axis": "trust",
+          "description": "Calum can be brought around with enough attention.",
+          "confidence": 0.55
+        }
+      ],
+      "goals": [
+        "Win Calum over",
+        "Keep the leak buried"
+      ]
+    },
+    "calum": {
+      "id": "calum",
+      "name": "Calum",
+      "traits": [
+        "cautious",
+        "kind"
+      ],
+      "state": {
+        "mood": "relaxed",
+        "emotions": {
+          "ease": 55,
+          "curiosity": 40
+        }
+      },
+      "relationships": {
+        "you": {
+          "trust": 52,
+          "affection": 47,
+          "respect": 48,
+          "fear": 12,
+          "baseline": {
+            "trust": 52,
+            "affection": 47,
+            "respect": 48,
+            "fear": 12
+          },
+          "lastDelta": {},
+          "flags": []
+        },
+        "alice": {
+          "trust": 59,
+          "affection": 56,
+          "respect": 62,
+          "fear": 14,
+          "baseline": {
+            "trust": 59,
+            "affection": 56,
+            "respect": 62,
+            "fear": 14
+          },
+          "lastDelta": {},
+          "flags": []
+        },
+        "bob": {
+          "trust": 64,
+          "affection": 58,
+          "respect": 66,
+          "fear": 16,
+          "baseline": {
+            "trust": 64,
+            "affection": 58,
+            "respect": 66,
+            "fear": 16
+          },
+          "lastDelta": {},
+          "flags": []
+        },
+        "dana": {
+          "trust": 53,
+          "affection": 51,
+          "respect": 57,
+          "fear": 19,
+          "baseline": {
+            "trust": 53,
+            "affection": 51,
+            "respect": 57,
+            "fear": 19
+          },
+          "lastDelta": {},
+          "flags": []
+        }
+      },
+      "memories": [
+        {
+          "id": "mem-calum-0",
+          "turn": 0,
+          "actor": "calum",
+          "description": "Calum arrived late and missed the argument in the west wing entirely.",
+          "tags": [
+            "arrival",
+            "withdraw"
+          ],
+          "importance": 0.2,
+          "valence": 0.0,
+          "tier": "direct",
+          "accurate": true
+        },
+        {
+          "id": "mem-calum-1",
+          "turn": 1,
+          "actor": "bob",
+          "description": "Bob has been unusually friendly with Calum lately.",
+          "tags": [
+            "bob",
+            "attention",
+            "affection"
+          ],
+          "importance": 0.5,
+          "valence": 0.3,
+          "tier": "direct",
+          "accurate": true,
+          "target": "calum"
+        },
+        {
+          "id": "mem-calum-2",
+          "turn": 2,
+          "actor": "dana",
+          "description": "Dana greeted Calum warmly at the gate.",
+          "tags": [
+            "greet",
+            "dana",
+            "affection"
+          ],
+          "importance": 0.35,
+          "valence": 0.4,
+          "tier": "direct",
+          "accurate": true,
+          "target": "calum"
+        },
+        {
+          "id": "mem-calum-3",
+          "turn": 3,
+          "actor": "alice",
+          "description": "Alice seemed distant at dinner and left early.",
+          "tags": [
+            "alice",
+            "withdraw"
+          ],
+          "importance": 0.3,
+          "valence": -0.2,
+          "tier": "direct",
+          "accurate": true
+        },
+        {
+          "id": "mem-calum-4",
+          "turn": 4,
+          "actor": "bob",
+          "description": "Bob offered Calum a gift and would not take it back.",
+          "tags": [
+            "givegift",
+            "bob",
+            "affection"
+          ],
+          "importance": 0.55,
+          "valence": 0.5,
+          "tier": "direct",
+          "accurate": true,
+          "target": "calum"
+        },
+        {
+          "id": "mem-calum-5",
+          "turn": 5,
+          "actor": "calum",
+          "description": "Calum asked you what the tension in the courtyard was about.",
+          "tags": [
+            "askforhelp",
+            "you",
+            "respect"
+          ],
+          "importance": 0.4,
+          "valence": -0.1,
+          "tier": "direct",
+          "accurate": true,
+          "target": "you"
+        },
+        {
+          "id": "mem-calum-6",
+          "turn": 6,
+          "actor": "bob",
+          "description": "Bob proposed that he and Calum work together.",
+          "tags": [
+            "propose",
+            "bob",
+            "trust"
+          ],
+          "importance": 0.6,
+          "valence": 0.4,
+          "tier": "direct",
+          "accurate": true,
+          "target": "calum"
+        },
+        {
+          "id": "mem-calum-7",
+          "turn": 7,
+          "actor": "dana",
+          "description": "Dana warned Calum to be careful about what Bob says.",
+          "tags": [
+            "dana",
+            "bob",
+            "suspicion"
+          ],
+          "importance": 0.5,
+          "valence": -0.3,
+          "tier": "told",
+          "accurate": true,
+          "target": "calum"
+        },
+        {
+          "id": "mem-calum-8",
+          "turn": 8,
+          "actor": "calum",
+          "description": "Calum refused to pick a side when asked directly.",
+          "tags": [
+            "refuse",
+            "withdraw",
+            "affection"
+          ],
+          "importance": 0.45,
+          "valence": 0.0,
+          "tier": "direct",
+          "accurate": true
+        },
+        {
+          "id": "mem-calum-9",
+          "turn": 9,
+          "actor": "you",
+          "description": "You greeted Calum in the courtyard and he looked relieved.",
+          "tags": [
+            "greet",
+            "you",
+            "affection"
+          ],
+          "importance": 0.25,
+          "valence": 0.2,
+          "tier": "direct",
+          "accurate": true,
+          "target": "calum"
+        }
+      ],
+      "beliefs": [
+        {
+          "id": "bel-calum-1",
+          "subject": "bob",
+          "axis": "trust",
+          "description": "The group feels tense but no one will say why.",
+          "confidence": 0.5
+        },
+        {
+          "id": "bel-calum-2",
+          "subject": "dana",
+          "axis": "respect",
+          "description": "Dana is protecting Alice from something.",
+          "confidence": 0.45
+        }
+      ],
+      "goals": [
+        "Keep the peace",
+        "Avoid taking sides"
+      ]
+    },
+    "dana": {
+      "id": "dana",
+      "name": "Dana",
+      "traits": [
+        "blunt",
+        "loyal"
+      ],
+      "state": {
+        "mood": "wary",
+        "emotions": {
+          "suspicion": 60,
+          "loyalty": 70
+        }
+      },
+      "relationships": {
+        "you": {
+          "trust": 49,
+          "affection": 42,
+          "respect": 45,
+          "fear": 8,
+          "baseline": {
+            "trust": 49,
+            "affection": 42,
+            "respect": 45,
+            "fear": 8
+          },
+          "lastDelta": {},
+          "flags": []
+        },
+        "alice": {
+          "trust": 77,
+          "affection": 71,
+          "respect": 67,
+          "fear": 2,
+          "baseline": {
+            "trust": 77,
+            "affection": 71,
+            "respect": 67,
+            "fear": 2
+          },
+          "lastDelta": {},
+          "flags": []
+        },
+        "bob": {
+          "trust": 22,
+          "affection": 16,
+          "respect": 32,
+          "fear": 29,
+          "baseline": {
+            "trust": 22,
+            "affection": 16,
+            "respect": 32,
+            "fear": 29
+          },
+          "lastDelta": {},
+          "flags": [
+            "suspicious"
+          ]
+        },
+        "calum": {
+          "trust": 56,
+          "affection": 54,
+          "respect": 58,
+          "fear": 11,
+          "baseline": {
+            "trust": 56,
+            "affection": 54,
+            "respect": 58,
+            "fear": 11
+          },
+          "lastDelta": {},
+          "flags": []
+        }
+      },
+      "memories": [
+        {
+          "id": "mem-dana-0",
+          "turn": 0,
+          "actor": "dana",
+          "description": "Dana caught Bob changing his story about the plan.",
+          "tags": [
+            "bob",
+            "suspicion",
+            "secret"
+          ],
+          "importance": 0.8,
+          "valence": -0.6,
+          "tier": "direct",
+          "accurate": true,
+          "target": "bob"
+        },
+        {
+          "id": "mem-dana-1",
+          "turn": 1,
+          "actor": "bob",
+          "description": "Alice told Dana what Bob did with the plan she trusted him with.",
+          "tags": [
+            "betrayal",
+            "alice",
+            "bob"
+          ],
+          "importance": 0.85,
+          "valence": -0.8,
+          "tier": "told",
+          "accurate": true,
+          "target": "alice"
+        },
+        {
+          "id": "mem-dana-2",
+          "turn": 2,
+          "actor": "dana",
+          "description": "Dana promised Alice she would find out who talked.",
+          "tags": [
+            "alliance",
+            "alice",
+            "trust"
+          ],
+          "importance": 0.7,
+          "valence": 0.6,
+          "tier": "direct",
+          "accurate": true,
+          "target": "alice"
+        },
+        {
+          "id": "mem-dana-3",
+          "turn": 3,
+          "actor": "dana",
+          "description": "Dana cut Bob down in front of everyone at breakfast.",
+          "tags": [
+            "insult",
+            "bob",
+            "affection"
+          ],
+          "importance": 0.6,
+          "valence": 0.2,
+          "tier": "direct",
+          "accurate": true,
+          "target": "bob"
+        },
+        {
+          "id": "mem-dana-4",
+          "turn": 4,
+          "actor": "bob",
+          "description": "Bob avoided Dana at breakfast and took the long way out.",
+          "tags": [
+            "bob",
+            "withdraw",
+            "fear"
+          ],
+          "importance": 0.45,
+          "valence": -0.2,
+          "tier": "direct",
+          "accurate": true,
+          "target": "dana"
+        },
+        {
+          "id": "mem-dana-5",
+          "turn": 5,
+          "actor": "calum",
+          "description": "Calum would not say what he had seen.",
+          "tags": [
+            "calum",
+            "refuse",
+            "trust"
+          ],
+          "importance": 0.5,
+          "valence": -0.3,
+          "tier": "direct",
+          "accurate": true,
+          "target": "dana"
+        },
+        {
+          "id": "mem-dana-6",
+          "turn": 6,
+          "actor": "you",
+          "description": "You asked Dana how Alice was holding up.",
+          "tags": [
+            "you",
+            "askforhelp",
+            "respect"
+          ],
+          "importance": 0.4,
+          "valence": 0.1,
+          "tier": "direct",
+          "accurate": true,
+          "target": "dana"
+        },
+        {
+          "id": "mem-dana-7",
+          "turn": 7,
+          "actor": "dana",
+          "description": "Dana defended Alice when Bob pushed back.",
+          "tags": [
+            "defend",
+            "alice",
+            "affection"
+          ],
+          "importance": 0.65,
+          "valence": 0.7,
+          "tier": "direct",
+          "accurate": true,
+          "target": "alice"
+        },
+        {
+          "id": "mem-dana-8",
+          "turn": 8,
+          "actor": "bob",
+          "description": "Dana saw Bob and Calum talking quietly by the gate.",
+          "tags": [
+            "bob",
+            "calum",
+            "suspicion"
+          ],
+          "importance": 0.55,
+          "valence": -0.4,
+          "tier": "direct",
+          "accurate": true,
+          "target": "calum"
+        },
+        {
+          "id": "mem-dana-9",
+          "turn": 9,
+          "actor": "alice",
+          "description": "Alice thanked Dana for staying.",
+          "tags": [
+            "alice",
+            "affection",
+            "greet"
+          ],
+          "importance": 0.35,
+          "valence": 0.5,
+          "tier": "direct",
+          "accurate": true,
+          "target": "dana"
+        }
+      ],
+      "beliefs": [
+        {
+          "id": "bel-dana-1",
+          "subject": "bob",
+          "axis": "trust",
+          "description": "Bob is hiding something and Calum is being pulled into it.",
+          "confidence": 0.6
+        }
+      ],
+      "goals": [
+        "Protect Alice",
+        "Expose whoever leaked the plan"
+      ]
+    }
+  }
+}

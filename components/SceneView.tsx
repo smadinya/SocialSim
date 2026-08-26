@@ -36,7 +36,13 @@ export default function SceneView({ scene, world, playerId }: Props) {
               line.optimistic ? "optimistic" : ""
             }`}
           >
-            {!line.optimistic && <div className="who">{line.speakerName}</div>}
+            {!line.optimistic && (
+              <div className="who">
+                {/* The player has a real name so NPCs can address them, but
+                    their own lines still read as second person. */}
+                {line.speaker === playerId ? "You" : line.speakerName}
+              </div>
+            )}
             <div className="said">
               {line.text}
               {line.streaming && <span className="cursor" />}

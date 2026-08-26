@@ -19,6 +19,7 @@ interface Props {
   onCommit: () => void;
   busy: boolean;
   understoodAs: string | null;
+  understoodOk: boolean;
   onCustom: (text: string) => void;
 }
 
@@ -32,6 +33,7 @@ export default function ActionMenu({
   onCommit,
   busy,
   understoodAs,
+  understoodOk,
   onCustom,
 }: Props) {
   const needsTarget = metaFor(selectedMove).needsTarget;
@@ -90,6 +92,7 @@ export default function ActionMenu({
         <CustomActionInput
           busy={busy}
           understoodAs={understoodAs}
+          understoodOk={understoodOk}
           onSubmit={onCustom}
         />
       </div>

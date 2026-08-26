@@ -10,7 +10,7 @@
   "characters": {
     "you": {
       "id": "you",
-      "name": "You",
+      "name": "Robin",
       "traits": ["observer", "curious"],
       "state": {
         "mood": "curious",
