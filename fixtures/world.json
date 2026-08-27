@@ -17,10 +17,10 @@
         "emotions": { "tension": 30, "warmth": 45 }
       },
       "relationships": {
-        "alice": { "trust": 50, "affection": 48, "respect": 50, "fear": 5 }, 
-        "bob": { "trust": 42, "affection": 40, "respect": 45, "fear": 12 },
-        "calum": { "trust": 48, "affection": 45, "respect": 46, "fear": 6 },
-        "dana": { "trust": 52, "affection": 50, "respect": 50, "fear": 5 }
+        "alice": { "trust": 50, "gratitude": 20, "affection": 48, "respect": 50, "fear": 5, "anger": 5, "jealousy": 3, "hate": 0 },
+        "bob": { "trust": 42, "gratitude": 10, "affection": 40, "respect": 45, "fear": 12, "anger": 12, "jealousy": 4, "hate": 5 },
+        "calum": { "trust": 48, "gratitude": 15, "affection": 45, "respect": 46, "fear": 6, "anger": 4, "jealousy": 2, "hate": 0 },
+        "dana": { "trust": 52, "gratitude": 18, "affection": 50, "respect": 50, "fear": 5, "anger": 3, "jealousy": 2, "hate": 0 }
       },
       "memories": [
         {
@@ -51,10 +51,10 @@
         "emotions": { "hurt": 60, "resolve": 55 }
       },
       "relationships": {
-        "you": { "trust": 55, "affection": 50, "respect": 45, "fear": 5 },
-        "bob": { "trust": 18, "affection": 40, "respect": 35, "fear": 20 },
-        "calum": { "trust": 60, "affection": 45, "respect": 50, "fear": 8 },
-        "dana": { "trust": 75, "affection": 68, "respect": 60, "fear": 5 }
+        "you": { "trust": 55, "gratitude": 20, "affection": 50, "respect": 45, "fear": 5, "anger": 4, "jealousy": 2, "hate": 0 },
+        "bob": { "trust": 18, "gratitude": 0, "affection": 40, "respect": 35, "fear": 20, "anger": 65, "jealousy": 20, "hate": 55 },
+        "calum": { "trust": 60, "gratitude": 18, "affection": 45, "respect": 50, "fear": 8, "anger": 4, "jealousy": 3, "hate": 0 },
+        "dana": { "trust": 75, "gratitude": 40, "affection": 68, "respect": 60, "fear": 5, "anger": 2, "jealousy": 1, "hate": 0 }
       },
       "memories": [
         {
@@ -94,10 +94,10 @@
         "emotions": { "guilt": 35, "confidence": 65 }
       },
       "relationships": {
-        "you": { "trust": 40, "affection": 35, "respect": 42, "fear": 18 },
-        "alice": { "trust": 45, "affection": 30, "respect": 40, "fear": 25 },
-        "calum": { "trust": 55, "affection": 72, "respect": 50, "fear": 10 },
-        "dana": { "trust": 30, "affection": 25, "respect": 38, "fear": 35 }
+        "you": { "trust": 40, "gratitude": 8, "affection": 35, "respect": 42, "fear": 18, "anger": 8, "jealousy": 5, "hate": 2 },
+        "alice": { "trust": 45, "gratitude": 5, "affection": 30, "respect": 40, "fear": 25, "anger": 25, "jealousy": 12, "hate": 18 },
+        "calum": { "trust": 55, "gratitude": 25, "affection": 72, "respect": 50, "fear": 10, "anger": 3, "jealousy": 15, "hate": 0 },
+        "dana": { "trust": 30, "gratitude": 2, "affection": 25, "respect": 38, "fear": 35, "anger": 35, "jealousy": 5, "hate": 28 }
       },
       "memories": [
         {
@@ -128,10 +128,10 @@
         "emotions": { "ease": 55, "curiosity": 40 }
       },
       "relationships": {
-        "you": { "trust": 50, "affection": 45, "respect": 48, "fear": 6 },
-        "alice": { "trust": 58, "affection": 50, "respect": 52, "fear": 8 },
-        "bob": { "trust": 60, "affection": 55, "respect": 58, "fear": 12 },
-        "dana": { "trust": 52, "affection": 48, "respect": 50, "fear": 10 }
+        "you": { "trust": 50, "gratitude": 15, "affection": 45, "respect": 48, "fear": 6, "anger": 3, "jealousy": 2, "hate": 0 },
+        "alice": { "trust": 58, "gratitude": 20, "affection": 50, "respect": 52, "fear": 8, "anger": 3, "jealousy": 4, "hate": 0 },
+        "bob": { "trust": 60, "gratitude": 18, "affection": 55, "respect": 58, "fear": 12, "anger": 4, "jealousy": 3, "hate": 0 },
+        "dana": { "trust": 52, "gratitude": 16, "affection": 48, "respect": 50, "fear": 10, "anger": 3, "jealousy": 2, "hate": 0 }
       },
       "memories": [
         {
@@ -162,10 +162,10 @@
         "emotions": { "suspicion": 60, "loyalty": 70 }
       },
       "relationships": {
-        "you": { "trust": 48, "affection": 42, "respect": 45, "fear": 8 },
-        "alice": { "trust": 78, "affection": 70, "respect": 65, "fear": 4 },
-        "bob": { "trust": 22, "affection": 15, "respect": 30, "fear": 30 },
-        "calum": { "trust": 55, "affection": 50, "respect": 52, "fear": 10 }
+        "you": { "trust": 48, "gratitude": 15, "affection": 42, "respect": 45, "fear": 8, "anger": 5, "jealousy": 2, "hate": 0 },
+        "alice": { "trust": 78, "gratitude": 45, "affection": 70, "respect": 65, "fear": 4, "anger": 1, "jealousy": 1, "hate": 0 },
+        "bob": { "trust": 22, "gratitude": 0, "affection": 15, "respect": 30, "fear": 30, "anger": 70, "jealousy": 4, "hate": 60 },
+        "calum": { "trust": 55, "gratitude": 18, "affection": 50, "respect": 52, "fear": 10, "anger": 3, "jealousy": 2, "hate": 0 }
       },
       "memories": [
         {

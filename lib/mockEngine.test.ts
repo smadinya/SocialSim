@@ -1,10 +1,23 @@
 import { describe, expect, it } from "vitest";
 import fixture from "@/fixtures/world.json";
+import { RELATIONSHIP_AXES } from "@sim/types";
 import type { CharacterId, Move, WorldFixture, WorldState } from "./viewTypes";
 import { runTick } from "./mockEngine";
 
 const { playerId, ...seed } = fixture as unknown as WorldFixture;
 const wait: Move = { id: "Wait", actor: playerId };
+
+describe("starting relationship fixture", () => {
+  it("seeds every directed pair with all eight numeric axes", () => {
+    for (const character of Object.values(seed.characters)) {
+      for (const relationship of Object.values(character.relationships)) {
+        for (const axis of RELATIONSHIP_AXES) {
+          expect(typeof relationship[axis]).toBe("number");
+        }
+      }
+    }
+  });
+});
 
 function play(turns: number): WorldState {
   let world = structuredClone(seed) as WorldState;
