@@ -24,7 +24,7 @@ const store = new Map<string, RealizedLine>();
 
 export function cacheKey(u: PendingUtterance): string {
   const rel = u.relationshipSnapshot;
-  const axes = REL_FIELDS.map((f) => bucket(rel[f as RelationshipAxis])).join("/");
+  const axes = REL_FIELDS.map((f: RelationshipAxis) => bucket(rel[f])).join("/");
   const top = u.retrievedMemories[0];
   const topMemory = top ? [...top.tags].sort().join(",") : "none";
   return [

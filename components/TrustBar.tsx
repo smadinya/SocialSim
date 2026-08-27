@@ -52,8 +52,8 @@ export default function TrustBar({ field, value }: Props) {
     };
   }, [value]);
 
-  const fillClass =
-    field === "fear" ? "fear" : shown >= 70 ? "high" : "";
+  const isNegative = ["fear", "anger", "jealousy", "hate"].includes(field);
+  const fillClass = isNegative ? "negative" : shown >= 70 ? "high" : "";
 
   return (
     <div className="rel-bars">

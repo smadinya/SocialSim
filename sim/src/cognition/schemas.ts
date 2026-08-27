@@ -1,3 +1,5 @@
+import type { RelationshipAxis } from "../types";
+
 export type PatchOperation =
   | "set"
   | "increment"
@@ -5,11 +7,8 @@ export type PatchOperation =
   | "remove"
   | "merge";
 
-export type RelationshipField =
-  | "trust"
-  | "affection"
-  | "respect"
-  | "fear";
+/** Cognition patches use the same axes as authoritative relationship state. */
+export type RelationshipField = RelationshipAxis;
 
 export type CognitionPath =
   | `/characters/${string}/relationships/${string}/${RelationshipField}`

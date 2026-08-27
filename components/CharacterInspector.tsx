@@ -88,7 +88,7 @@ export default function CharacterInspector({
                     {!onScene && <span className="rel-where">off scene</span>}
                   </div>
                   {REL_FIELDS.map((field) => (
-                    <TrustBar key={field} field={field} value={rel[field]} />
+                    <TrustBar key={field} field={field} value={rel[field] ?? 0} />
                   ))}
                 </div>
               );

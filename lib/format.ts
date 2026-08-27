@@ -1,11 +1,8 @@
 import type { Relationship, RelationshipField } from "./viewTypes";
+import { RELATIONSHIP_AXES } from "@sim/types";
+import { relationshipValue } from "@sim/relationships";
 
-export const REL_FIELDS: RelationshipField[] = [
-  "trust",
-  "affection",
-  "respect",
-  "fear",
-];
+export const REL_FIELDS: RelationshipField[] = [...RELATIONSHIP_AXES];
 
 export function clamp(n: number): number {
   if (n < 0) return 0;
@@ -21,8 +18,16 @@ export function bucket(value: number): string {
 }
 
 export function relationshipTone(rel: Relationship): string {
-  const positive = rel.trust + rel.affection + rel.respect;
-  const negative = rel.fear * 3;
+  const positive =
+    relationshipValue(rel, "trust") +
+    relationshipValue(rel, "gratitude") +
+    relationshipValue(rel, "affection") +
+    relationshipValue(rel, "respect");
+  const negative =
+    relationshipValue(rel, "fear") * 3 +
+    relationshipValue(rel, "anger") +
+    relationshipValue(rel, "jealousy") +
+    relationshipValue(rel, "hate");
   if (positive - negative >= 150) return "warm";
   if (positive - negative <= 40) return "cold";
   return "neutral";

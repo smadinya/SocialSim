@@ -21,6 +21,8 @@ export type ToneBucket = "cold" | "neutral" | "warm";
 
 const COLD: Record<string, string> = {
   Greet: "{target}. Didn't think I'd run into you.",
+  Talk: "Say what you came to say, {target}.",
+  Ask: "Ask, {target}. I haven't promised an answer.",
   Confront: "Save it, {target}. I stopped believing you a while ago.",
   GiveGift: "Here. Take it, {target}. Let's call it settled.",
   SpreadRumor:
@@ -31,7 +33,13 @@ const COLD: Record<string, string> = {
   Insult: "You've never once surprised me, {target}. Not once.",
   Apologize: "Fine. I'm sorry, {target}. Is that what you wanted?",
   AskForHelp: "I wouldn't ask if there were anyone else, {target}.",
+  Hug: "Don't make more of this than it is, {target}.",
+  Comfort: "I know things are bad, {target}. I'm still here.",
+  Flirt: "Careful, {target}. Charm won't fix this.",
+  Mimic: "Does that sound familiar, {target}? It should.",
   Refuse: "No. And don't ask me again, {target}.",
+  Argue: "You're wrong, {target}, and I'm done pretending otherwise.",
+  Fight: "Take one more step, {target}. See what happens.",
   Comply: "Have it your way, {target}. You usually do.",
   Withdraw: "I'm done here.",
   Propose: "I don't much like you, {target}, but we want the same thing.",
@@ -39,6 +47,8 @@ const COLD: Record<string, string> = {
 
 const NEUTRAL: Record<string, string> = {
   Greet: "Good to see you, {target}. It's been a strange few days.",
+  Talk: "Can we talk for a moment, {target}?",
+  Ask: "I need to ask you something, {target}.",
   Confront: "Don't play dumb, {target}. I know what you did.",
   GiveGift: "Here, {target}. I wanted you to have this.",
   SpreadRumor: "You didn't hear it from me, {target}, but there's been talk about them.",
@@ -47,13 +57,27 @@ const NEUTRAL: Record<string, string> = {
   Insult: "Honestly, {target}, I expected better and got less.",
   Apologize: "I'm sorry, {target}. I should have handled that differently.",
   AskForHelp: "I can't do this alone, {target}. Will you help me?",
+  Hug: "Come here, {target}.",
+  Comfort: "You don't have to carry this alone, {target}.",
+  Flirt: "You know, {target}, you're hard not to notice.",
+  Mimic: "Is that really how you want to sound, {target}?",
   Refuse: "No, {target}. Not this time.",
+  Argue: "No, {target}. That's not how it happened.",
+  Fight: "Enough talking, {target}.",
   Comply: "Fine, {target}. We'll do it your way.",
   Withdraw: "I need a minute. I'll be back.",
   Propose: "We want the same thing, {target}. Let's work together.",
 };
 
 const WARM: Record<string, string> = {
+  Talk: "I've been wanting a quiet moment with you, {target}.",
+  Ask: "Can I ask you something honestly, {target}?",
+  Hug: "Come here, {target}. I've got you.",
+  Comfort: "Stay with me, {target}. You don't have to face this alone.",
+  Flirt: "You make it very difficult to look away, {target}.",
+  Mimic: "You do that little thing when you're nervous, {target}.",
+  Argue: "I care about you, {target}, but I can't agree with this.",
+  Fight: "Please stop, {target}. I don't want this to become a fight.",
   Greet: "{target} — there you are. I was hoping you'd turn up.",
   Confront: "{target}, I need you to look at me and tell me the truth. That's all.",
   GiveGift: "I saw this and thought of you, {target}. No occasion.",

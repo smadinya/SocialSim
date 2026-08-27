@@ -2,8 +2,10 @@ import type {
   CharacterId,
   Move,
   MoveId,
-  Relationship,
+  RelationshipAxis,
+  RelationshipState,
   SimEvent,
+  TickResult,
   WorldState,
 } from "@sim/types";
 
@@ -14,44 +16,22 @@ export type {
   Belief,
   Move,
   MoveId,
-  Relationship,
+  RelationshipAxis,
+  RelationshipDelta,
+  RelationshipState,
+  ResolvedMove,
   SimEvent,
+  TickResult,
+  Utterance,
   WorldState,
 } from "@sim/types";
 
-export type RelationshipField = keyof Relationship;
+/** Compatibility name used by UI components; values come from Track A. */
+export type Relationship = RelationshipState;
+export type RelationshipField = RelationshipAxis;
 
 export interface WorldFixture extends WorldState {
   playerId: CharacterId;
-}
-
-export interface Utterance {
-  speaker: CharacterId;
-  moveId: MoveId;
-  line: string;
-  deliveryNote?: string;
-}
-
-export interface ResolvedMove {
-  move: Move;
-  witnessedByPlayer: boolean;
-}
-
-export interface RelationshipDelta {
-  sourceActor: CharacterId;
-  from: CharacterId;
-  to: CharacterId;
-  field: RelationshipField;
-  before: number;
-  after: number;
-}
-
-export interface TickResult {
-  state: WorldState;
-  utterances: Utterance[];
-  events: SimEvent[];
-  log: ResolvedMove[];
-  deltas: RelationshipDelta[];
 }
 
 export interface InterpretResult {

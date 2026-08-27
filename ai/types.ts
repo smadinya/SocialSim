@@ -1,23 +1,35 @@
 /**
- * Local mirror of the shape G0 is going to freeze in `sim/src/types.ts`.
+ * TODO(Track B): Shared engine contracts belong in `sim/src/types.ts`.
+ * Delete this local mirror and repoint Track B imports after its prompt-only
+ * metadata fields have an agreed home. This includes consuming every
+ * authoritative relationship axis rather than maintaining a four-axis union.
  *
  * Delete this file at G0 and repoint the imports — `ai/adapt.ts` is the only
  * other file that has to change. This is a shim with a delete date, not an
  * abstraction layer.
  */
-import type { CharacterId, Move } from "@sim/types";
+import type { CharacterId, Move, RelationshipAxis } from "@sim/types";
 
-export type { CharacterId, Move, MoveId, WorldState } from "@sim/types";
+export type {
+  CharacterId,
+  Move,
+  MoveId,
+  RelationshipAxis,
+  WorldState,
+} from "@sim/types";
 
-export type RelationshipAxis = "trust" | "affection" | "respect" | "fear";
 export type MemoryTier = "direct" | "overheard" | "told";
 
-/** Four axes + `baseline` / `lastDelta` / `flags`, none of which exist today. */
+/** Prompt-ready view of every authoritative relationship axis. */
 export interface Relationship {
   trust: number;
+  gratitude: number;
   affection: number;
   respect: number;
   fear: number;
+  anger: number;
+  jealousy: number;
+  hate: number;
   baseline: Record<RelationshipAxis, number>;
   lastDelta: Partial<Record<RelationshipAxis, number>>;
   flags: string[];

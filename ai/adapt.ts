@@ -8,8 +8,10 @@ import type {
   RelationshipAxis,
   WorldState,
 } from "@ai/types";
+import type { RelationshipState } from "@sim/types";
 import type { RelationshipDelta, ResolvedMove } from "@/lib/viewTypes";
 import { REL_FIELDS } from "@/lib/format";
+import { relationshipValues } from "@sim/relationships";
 import { retrieve } from "@ai/retrieval";
 
 /**
@@ -24,7 +26,7 @@ type LooseMemory = Omit<Memory, "valence" | "tier" | "accurate"> &
 
 type LooseBelief = Omit<Belief, "subject"> & Partial<Pick<Belief, "subject">>;
 
-type LooseRelationship = Omit<Relationship, "baseline" | "lastDelta" | "flags"> &
+type LooseRelationship = RelationshipState &
   Partial<Pick<Relationship, "baseline" | "lastDelta" | "flags">>;
 
 export function toMemory(m: LooseMemory): Memory {
@@ -47,18 +49,16 @@ function toRelationship(
   rel: LooseRelationship | undefined,
   lastDelta: Partial<Record<RelationshipAxis, number>>,
 ): Relationship {
-  const axes = rel ?? { trust: 0, affection: 0, respect: 0, fear: 0 };
+  const axes = relationshipValues(rel);
   const baseline = {} as Record<RelationshipAxis, number>;
   for (const f of REL_FIELDS) {
-    // Nothing decays yet, so "where it started" is "where it is" (ask #4).
-    baseline[f as RelationshipAxis] = axes[f as RelationshipAxis];
+    // Legacy four-axis baselines inherit the normalized current value for any
+    // newly introduced axis until Track A's decay pass starts persisting it.
+    baseline[f] = rel?.baseline?.[f] ?? axes[f];
   }
   return {
-    trust: axes.trust,
-    affection: axes.affection,
-    respect: axes.respect,
-    fear: axes.fear,
-    baseline: rel?.baseline ?? baseline,
+    ...axes,
+    baseline,
     // Track A's `lastDelta` wins once it carries anything; until then the
     // tick's own deltas fill it in.
     lastDelta: Object.keys(rel?.lastDelta ?? {}).length ? rel!.lastDelta! : lastDelta,
@@ -80,7 +80,7 @@ function deltaFor(
   const out: Partial<Record<RelationshipAxis, number>> = {};
   for (const d of deltas) {
     if (d.from === from && d.to === to) {
-      out[d.field as RelationshipAxis] = d.after - d.before;
+      out[d.field] = d.after - d.before;
     }
   }
   return out;

@@ -239,7 +239,7 @@ function applyEffects(
     if (!rel) continue;
 
     const field = effect.field as RelationshipField;
-    const before = rel[field];
+    const before = rel[field] ?? 0;
     const after = clamp(before + effect.amount);
     rel[field] = after;
 
@@ -396,12 +396,20 @@ function beliefPatches(
 const MOOD_FOR: Record<string, string> = {
   "trust:+": "reassured",
   "trust:-": "stung",
+  "gratitude:+": "grateful",
+  "gratitude:-": "disappointed",
   "affection:+": "warmed",
   "affection:-": "hurt",
   "respect:+": "impressed",
   "respect:-": "slighted",
   "fear:+": "rattled",
   "fear:-": "steadier",
+  "anger:+": "angry",
+  "anger:-": "calmer",
+  "jealousy:+": "jealous",
+  "jealousy:-": "secure",
+  "hate:+": "hostile",
+  "hate:-": "softened",
 };
 
 /** Below this a Greet's +3 affection would rewrite how someone feels. */
@@ -579,12 +587,22 @@ export function runTick(
   next.turn = nextTurn;
   next.clock = advanceClock(next.clock);
 
-  return { state: next, utterances, events, log, deltas };
+  return {
+    state: next,
+    utterances,
+    events,
+    log,
+    deltas,
+    pendingUtterances: [],
+    eligibleActors: present.filter((id) => Boolean(next.characters[id]?.state)),
+  };
 }
 
 function verbFor(moveId: MoveId): string {
   const verbs: Record<string, string> = {
     Greet: "greeted",
+    Talk: "talked to",
+    Ask: "asked",
     Confront: "confronted",
     GiveGift: "gave a gift to",
     SpreadRumor: "spread a rumor about",
@@ -593,7 +611,13 @@ function verbFor(moveId: MoveId): string {
     Insult: "insulted",
     Apologize: "apologized to",
     AskForHelp: "asked for help from",
+    Hug: "hugged",
+    Comfort: "comforted",
+    Flirt: "flirted with",
+    Mimic: "mimicked",
     Refuse: "refused",
+    Argue: "argued with",
+    Fight: "fought",
     Comply: "went along with",
     Withdraw: "stepped away",
     Wait: "waited",

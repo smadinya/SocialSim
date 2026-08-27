@@ -18,7 +18,7 @@ import { REL_FIELDS } from "@/lib/format";
 function axisLine(u: PendingUtterance): string {
   const rel = u.relationshipSnapshot;
   return REL_FIELDS.map((f) => {
-    const axis = f as RelationshipAxis;
+    const axis: RelationshipAxis = f;
     const delta = rel.lastDelta[axis];
     if (delta === undefined || delta === 0) return `${axis} ${rel[axis]}`;
     const dir = delta > 0 ? "up" : "down";

@@ -19,7 +19,8 @@ function promptFor(actor: CharacterId, id: string, target?: CharacterId): string
 /** Every `axis value` pair the prompt actually renders. */
 function axisPairs(prompt: string): Set<string> {
   const out = new Set<string>();
-  for (const m of prompt.matchAll(/\b(trust|affection|respect|fear) (\d+)/g)) {
+  const axes = REL_FIELDS.join("|");
+  for (const m of prompt.matchAll(new RegExp(`\\b(${axes}) (\\d+)`, "g"))) {
     out.add(`${m[1]} ${m[2]}`);
   }
   return out;
@@ -36,7 +37,8 @@ describe("prompt assembly", () => {
 
         const own = new Set(
           REL_FIELDS.map(
-            (f) => `${f} ${world.characters[speaker].relationships[target][f]}`,
+            (f) =>
+              `${f} ${world.characters[speaker].relationships[target][f] ?? 0}`,
           ),
         );
         // The speaker's own view of the listener, and nothing else.
