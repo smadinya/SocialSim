@@ -8,20 +8,34 @@ import type {
 /**
  * Where a patch lands: the object that holds the value, and the key on it.
  *
- * Every `CognitionPath` is `/characters/{id}/…`, so walking the segments and
- * stopping one short of the end resolves all six shapes with no per-path code.
+ * Walking the segments and stopping one short of the end resolves every
+ * `CognitionPath` shape with no per-path code. The root allowlist is what
+ * keeps a generated patch from reaching `rngSeed` or `turn`.
  */
 export interface PatchSlot {
   container: Record<string, unknown>;
   key: string;
 }
 
+const PATCHABLE_ROOTS = new Set(["characters", "conversations", "topics", "phase"]);
+
 export function resolveSlot(
   world: WorldState,
   path: string,
 ): PatchSlot | { error: string } {
   const parts = path.split("/").filter(Boolean);
-  if (parts.length < 3 || parts[0] !== "characters") {
+  if (parts.length === 0 || !PATCHABLE_ROOTS.has(parts[0])) {
+    return { error: `unsupported path: ${path}` };
+  }
+  // `/phase` is the one single-segment path; everything else addresses a
+  // member of a record and needs at least `/root/id/field`.
+  if (parts.length === 1) {
+    if (parts[0] !== "phase") {
+      return { error: `unsupported path: ${path}` };
+    }
+    return { container: world as unknown as Record<string, unknown>, key: "phase" };
+  }
+  if (parts.length < 3) {
     return { error: `unsupported path: ${path}` };
   }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { CharacterId, WorldState } from "@ai/types";
+import type { CharacterId, WorldState } from "@sim/types";
 import { REL_FIELDS } from "@/lib/format";
 import { realizePrompt } from "@ai/prompts/realize";
 import { toPendingUtterance } from "@ai/adapt";
@@ -16,10 +16,17 @@ function promptFor(actor: CharacterId, id: string, target?: CharacterId): string
   );
 }
 
-/** Every `axis value` pair the prompt actually renders. */
+/**
+ * Every `axis value` pair the prompt actually renders.
+ *
+ * Built from `REL_FIELDS` rather than a hard-coded alternation: the literal
+ * list stopped covering every axis the moment `anger` landed, and a leak test
+ * that quietly ignores an axis is worse than no leak test.
+ */
 function axisPairs(prompt: string): Set<string> {
   const out = new Set<string>();
-  for (const m of prompt.matchAll(/\b(trust|affection|respect|fear) (\d+)/g)) {
+  const axes = REL_FIELDS.join("|");
+  for (const m of prompt.matchAll(new RegExp(`\\b(${axes}) (\\d+)`, "g"))) {
     out.add(`${m[1]} ${m[2]}`);
   }
   return out;

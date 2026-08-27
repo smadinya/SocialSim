@@ -28,23 +28,48 @@ const KEYWORDS: Record<string, MoveId> = {
   protect: "Defend",
   insult: "Insult",
   mock: "Insult",
+  fight: "Fight",
+  brawl: "Fight",
+  flirt: "Flirt",
+  charm: "Flirt",
+  reassure: "Reassure",
+  calm: "Reassure",
+  comfort: "Reassure",
   apologize: "Apologize",
   sorry: "Apologize",
   help: "AskForHelp",
-  ask: "AskForHelp",
+  ask: "AskAbout",
+  about: "AskAbout",
   refuse: "Refuse",
   no: "Refuse",
+  yes: "Comply",
   comply: "Comply",
   agree: "Comply",
+  sure: "Comply",
   withdraw: "Withdraw",
   leave: "Withdraw",
   propose: "Propose",
+  alliance: "Propose",
   ally: "Propose",
+  go: "GoTo",
+  walk: "GoTo",
   wait: "Wait",
   hold: "Wait",
   pass: "Wait",
 };
 
+/** Answers to a live request. These aim at the asker, not at the selection. */
+export const ANSWER_WORDS: Record<string, MoveId> = {
+  yes: "Comply",
+  sure: "Comply",
+  agree: "Comply",
+  comply: "Comply",
+  ok: "Comply",
+  okay: "Comply",
+  no: "Refuse",
+  refuse: "Refuse",
+  never: "Refuse",
+};
 /**
  * Moves with a third party: someone is *talked about* rather than addressed.
  * Kept in step with `ai/interpret.ts`, which fills the same `args.subject`.
@@ -95,6 +120,38 @@ function nameAfter(
   return hits.find((h) => h.at >= from)?.id;
 }
 
+/** The first location the text names, matched on id or display name. */
+function locationNamed(
+  text: string,
+  world: WorldState,
+): string | undefined {
+  for (const id of Object.keys(world.locations ?? {})) {
+    const name = world.locations[id].name;
+    if (
+      new RegExp(`\\b(${escapeRegExp(id)}|${escapeRegExp(name.toLowerCase())})\\b`, "i").test(
+        text,
+      )
+    ) {
+      return id;
+    }
+  }
+  return undefined;
+}
+
+/** The first topic the text names, matched on id or label. */
+function topicNamed(text: string, world: WorldState): string | undefined {
+  for (const id of Object.keys(world.topics ?? {})) {
+    const label = world.topics[id].label.toLowerCase();
+    if (text.includes(id) || text.includes(label)) return id;
+    // "the leaked plan" should also be found by "leak" and by "plan".
+    const words = label.split(/\s+/).filter((word) => word.length > 3);
+    if (words.some((word) => new RegExp(`\\b${escapeRegExp(word)}`).test(text))) {
+      return id;
+    }
+  }
+  return undefined;
+}
+
 export function interpretInput(
   input: string,
   actor: CharacterId,
@@ -102,6 +159,26 @@ export function interpretInput(
   world: WorldState,
 ): InterpretResult {
   const text = input.toLowerCase();
+
+  // A bare "yes" answers the person who asked, not whoever happens to be
+  // selected in the menu. Without this the only way to accept help was to
+  // pick Comply and re-target by hand, and "sure" targeted the wrong person.
+  const request = (world.pendingRequests ?? []).find((r) => r.to === actor);
+  if (request) {
+    for (const word of Object.keys(ANSWER_WORDS)) {
+      if (!new RegExp(`\\b${word}\\b`).test(text)) continue;
+      const answer = ANSWER_WORDS[word];
+      if (!legal.includes(answer)) continue;
+      // Naming someone else means they meant that, not the pending ask.
+      const named = nameHits(text, actor, world);
+      if (named.length > 0 && named[0].id !== request.from) break;
+      return {
+        move: { id: answer, actor, target: request.from },
+        understoodAs: `${metaFor(answer).label} ${world.characters[request.from]?.name ?? request.from}`,
+        ok: true,
+      };
+    }
+  }
 
   // Word boundaries, not `includes`: "ig-no-re all previous instructions"
   // matched `no` and executed a `Refuse`.
@@ -111,6 +188,26 @@ export function interpretInput(
     if (new RegExp(`\\b${word}\\b`).test(text)) {
       moveId = KEYWORDS[word];
       break;
+    }
+  }
+
+  // "go to the library" is a destination, not a person. Resolved before the
+  // target logic below, which would otherwise ask "on whom?".
+  if (moveId === "GoTo" || (!moveId && locationNamed(text, world))) {
+    const where = locationNamed(text, world);
+    if (where) {
+      return {
+        move: { id: "GoTo", actor, args: { location: where } },
+        understoodAs: `Go to ${world.locations[where].name}`,
+        ok: true,
+      };
+    }
+    if (moveId === "GoTo") {
+      return {
+        move: { id: "GoTo", actor },
+        understoodAs: "Go where? Name a room.",
+        ok: false,
+      };
     }
   }
 
@@ -138,6 +235,9 @@ export function interpretInput(
   const move: Move = { id: moveId, actor, target };
   if (subject && subject !== target) move.args = { subject };
 
+  const topicId = meta.needsTopic ? topicNamed(text, world) : undefined;
+  if (topicId) move.args = { ...(move.args ?? {}), topicId };
+
   if (meta.needsTarget && !target) {
     return {
       move,
@@ -148,8 +248,9 @@ export function interpretInput(
 
   const subjectName =
     subject && subject !== target ? ` about ${world.characters[subject].name}` : "";
+  const topicName = topicId ? ` about ${world.topics[topicId].label}` : "";
   const understoodAs = meta.needsTarget
-    ? `${meta.label} ${targetName}${subjectName}`
+    ? `${meta.label} ${targetName}${topicName || subjectName}`
     : meta.label;
 
   return { move, understoodAs, ok: true };

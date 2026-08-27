@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { PendingUtterance, WorldState } from "@ai/types";
+import type { PendingUtterance, WorldState } from "@sim/types";
 import deep from "./fixtures/deep-world.json";
 
 /**

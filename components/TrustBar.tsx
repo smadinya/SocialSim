@@ -52,8 +52,10 @@ export default function TrustBar({ field, value }: Props) {
     };
   }, [value]);
 
+  // Fear and anger are the two axes you do not want high, so they read as a
+  // warning regardless of value rather than turning "good" at 70.
   const fillClass =
-    field === "fear" ? "fear" : shown >= 70 ? "high" : "";
+    field === "fear" ? "fear" : field === "anger" ? "anger" : shown >= 70 ? "high" : "";
 
   return (
     <div className="rel-bars">

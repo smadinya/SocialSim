@@ -1,4 +1,4 @@
-import type { MoveId, PendingUtterance } from "@ai/types";
+import type { MoveId, PendingUtterance } from "@sim/types";
 import { relationshipTone } from "@/lib/format";
 
 /**
@@ -20,6 +20,11 @@ import { relationshipTone } from "@/lib/format";
 export type ToneBucket = "cold" | "neutral" | "warm";
 
 const COLD: Record<string, string> = {
+  AskAbout: "Don't pretend you're asking, {target}. You've already decided what you think.",
+  Fight: "No — we're doing this now, {target}. I've swallowed it long enough.",
+  Flirt: "You'd like that, wouldn't you, {target}. Pity.",
+  Reassure: "Calm down, {target}. Nobody's interested in you enough to bother.",
+  GoTo: "I'm not standing here for this.",
   Greet: "{target}. Didn't think I'd run into you.",
   Confront: "Save it, {target}. I stopped believing you a while ago.",
   GiveGift: "Here. Take it, {target}. Let's call it settled.",
@@ -38,6 +43,11 @@ const COLD: Record<string, string> = {
 };
 
 const NEUTRAL: Record<string, string> = {
+  AskAbout: "{target} — what do you actually know about it? Straight answer.",
+  Fight: "That's it, {target}. I'm done being careful with you.",
+  Flirt: "You're the only interesting thing about this week, {target}.",
+  Reassure: "Breathe, {target}. Nobody here is coming for you.",
+  GoTo: "I need some air.",
   Greet: "Good to see you, {target}. It's been a strange few days.",
   Confront: "Don't play dumb, {target}. I know what you did.",
   GiveGift: "Here, {target}. I wanted you to have this.",
@@ -54,6 +64,11 @@ const NEUTRAL: Record<string, string> = {
 };
 
 const WARM: Record<string, string> = {
+  AskAbout: "{target}, you'd tell me if you knew. So — do you?",
+  Fight: "I don't want to be saying this to you of all people, {target}, but here we are.",
+  Flirt: "I've been finding excuses to be wherever you are, {target}. That's all.",
+  Reassure: "Hey. {target}. Look at me — you're all right.",
+  GoTo: "I'll be close by. Come find me.",
   Greet: "{target} — there you are. I was hoping you'd turn up.",
   Confront: "{target}, I need you to look at me and tell me the truth. That's all.",
   GiveGift: "I saw this and thought of you, {target}. No occasion.",

@@ -1,15 +1,19 @@
 "use client";
 
 import { useCallbackRef } from "@/lib/useCallbackRef";
-import { useEffect, useReducer, useRef, useState } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import type { Move, MoveId, WorldFixture } from "@/lib/viewTypes";
 import { initState, reducer } from "@/lib/reducer";
-import { MENU_MOVE_IDS, metaFor } from "@/lib/moveMeta";
-import { runTick } from "@/lib/mockEngine";
+import type { MenuRow } from "@/lib/moveMeta";
+import { MENU_MOVE_IDS, MENU_ROWS, canFight, metaFor } from "@/lib/moveMeta";
+import { requestsFor, runTick } from "@/lib/mockEngine";
 import { interpretInput } from "@/lib/interpret";
 import { postInterpret, postTurn } from "@/lib/api";
 import type { AiMode } from "@/lib/api";
 import { MOVE_IDS } from "@sim/moves/catalog";
+import { formatClock, movesLeft } from "@/lib/clock";
+import { between, talkingPairs } from "@/lib/conversations";
+import { topicsKnownTo } from "@/lib/topics";
 import {
   clearSession,
   exportSession,
@@ -22,6 +26,7 @@ import SceneView from "./SceneView";
 import ActionMenu from "./ActionMenu";
 import CharacterInspector from "./CharacterInspector";
 import EventFeed from "./EventFeed";
+import RelationshipMap from "./RelationshipMap";
 
 const LEGAL_IDS = [...MOVE_IDS] as MoveId[];
 
@@ -42,39 +47,66 @@ interface Props {
 
 export default function Terminal({ fixture }: Props) {
   const { playerId, ...world } = fixture;
-  const [state, dispatch] = useReducer(
+  const [state, dispatch] = useReducer(reducer, { world, playerId }, initState);
 
-    reducer,
-    { world, playerId },
-    initState,
-  );
-
-  const [selectedMove, setSelectedMove] = useState<MoveId>(MENU_MOVE_IDS[0]);
+  const [row, setRow] = useState<MenuRow>("Talk");
+  const [selectedMove, setSelectedMove] = useState<MoveId>(MENU_MOVE_IDS.Talk[0]);
   const [selectedTarget, setSelectedTarget] = useState<string | null>(null);
-  // On by default: `performMove` and `handleCustom` both catch and re-run the
-  // tick locally, so a missing key or a dead network degrades on its own. Off
-  // by default meant a first-time player only ever saw stub templates.
+  const [selectedExit, setSelectedExit] = useState<string | null>(null);
+  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+  const [showMap, setShowMap] = useState(false);
   const [useServer, setUseServer] = useState(true);
   const [aiMode, setAiMode] = useState<AiMode | null>(null);
 
   const stateRef = useRef(state);
   stateRef.current = state;
 
-  const present = state.world.scene.presentCharacters;
-  const targets = present
-    .filter((id) => id !== playerId)
-    .map((id) => ({ id, name: state.world.characters[id].name }));
+  const w = state.world;
+  const present = w.scene.presentCharacters;
+
+  const targets = useMemo(
+    () =>
+      present
+        .filter((id) => id !== playerId)
+        .map((id) => ({ id, name: w.characters[id].name })),
+    [present, playerId, w.characters],
+  );
+
+  const exits = useMemo(() => {
+    const here = w.locations[w.scene.location];
+    return (here?.connectsTo ?? []).map((id) => ({
+      id,
+      name: w.locations[id]?.name ?? id,
+    }));
+  }, [w.locations, w.scene.location]);
+
+  const topics = useMemo(
+    () =>
+      topicsKnownTo(w, playerId).map((id) => ({
+        id,
+        name: w.topics[id].label,
+      })),
+    [w, playerId],
+  );
+
+  const requests = useMemo(() => requestsFor(w, playerId), [w, playerId]);
+  const pairs = useMemo(() => talkingPairs(w, w.scene.location), [w]);
+
+  const fightUnlocked = useMemo(() => {
+    if (!selectedTarget) return false;
+    const conversation = between(w, playerId, selectedTarget);
+    return canFight(w, playerId, selectedTarget, conversation?.heat ?? 0);
+  }, [w, playerId, selectedTarget]);
 
   useEffect(() => {
-    if (selectedTarget === null &&  targets.length > 0) {
-      setSelectedTarget(targets[0].id);
-    }
+    if (selectedTarget === null && targets.length > 0) setSelectedTarget(targets[0].id);
   }, [selectedTarget, targets]);
-
-  // No autosave: it wrote the manual slot on every state change and nothing
-  // read it at boot (`initState` always takes the fixture), so its only
-  // observable effect was that `load` returned the state you were already in.
-  // Resume-on-boot needs a separate key, and nobody has asked for it.
+  useEffect(() => {
+    if (selectedExit === null && exits.length > 0) setSelectedExit(exits[0].id);
+  }, [selectedExit, exits]);
+  useEffect(() => {
+    if (selectedTopic === null && topics.length > 0) setSelectedTopic(topics[0].id);
+  }, [selectedTopic, topics]);
 
   useEffect(() => {
     const plan = state.pending;
@@ -116,6 +148,12 @@ export default function Terminal({ fixture }: Props) {
         } else if (step.kind === "feed") {
           dispatch({ type: "addFeed", event: step.event });
           await sleep(reduce ? 0 : 280);
+        } else if (step.kind === "digest") {
+          for (const event of step.events) {
+            if (cancelled) return;
+            dispatch({ type: "addFeed", event });
+            await sleep(reduce ? 0 : 200);
+          }
         }
       }
       if (!cancelled) dispatch({ type: "endReveal" });
@@ -139,21 +177,33 @@ export default function Terminal({ fixture }: Props) {
       }
     } catch {
       setAiMode("mock");
-      const result = runTick(snapshot, playerId, move);
-      dispatch({ type: "applyResult", result });
+      dispatch({ type: "applyResult", result: runTick(snapshot, playerId, move) });
     }
   }
 
   function commit() {
     if (stateRef.current.busy) return;
     const meta = metaFor(selectedMove);
+
+    if (selectedMove === "GoTo") {
+      if (!selectedExit) return;
+      performMove({ id: "GoTo", actor: playerId, args: { location: selectedExit } });
+      return;
+    }
     if (meta.needsTarget && !selectedTarget) return;
+
     const move: Move = {
       id: selectedMove,
       actor: playerId,
       target: meta.needsTarget ? selectedTarget || undefined : undefined,
     };
+    if (meta.needsTopic && selectedTopic) move.args = { topicId: selectedTopic };
     performMove(move);
+  }
+
+  function respond(moveId: MoveId, asker: string) {
+    if (stateRef.current.busy) return;
+    performMove({ id: moveId, actor: playerId, target: asker });
   }
 
   function selectMove(id: MoveId) {
@@ -161,6 +211,11 @@ export default function Terminal({ fixture }: Props) {
     if (metaFor(id).needsTarget && !selectedTarget && targets.length > 0) {
       setSelectedTarget(targets[0].id);
     }
+  }
+
+  function selectRow(next: MenuRow) {
+    setRow(next);
+    setSelectedMove(MENU_MOVE_IDS[next][0]);
   }
 
   async function handleCustom(text: string) {
@@ -189,6 +244,9 @@ export default function Terminal({ fixture }: Props) {
 
   const commitRef = useCallbackRef(commit);
   const selectMoveRef = useCallbackRef(selectMove);
+  const selectRowRef = useCallbackRef(selectRow);
+  const rowRef = useRef(row);
+  rowRef.current = row;
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -197,12 +255,20 @@ export default function Terminal({ fixture }: Props) {
       if (tag === "INPUT" || tag === "TEXTAREA") return;
       if (stateRef.current.busy) return;
 
+      // Number keys address the OPEN ROW, not a flat list. The catalog passed
+      // ten moves in this update and a flat list would have made the tenth
+      // permanently unreachable.
       if (e.key >= "1" && e.key <= "9") {
+        const ids = MENU_MOVE_IDS[rowRef.current];
         const idx = parseInt(e.key, 10) - 1;
-        if (idx < MENU_MOVE_IDS.length) {
+        if (idx < ids.length) {
           e.preventDefault();
-          selectMoveRef.current(MENU_MOVE_IDS[idx]);
+          selectMoveRef.current(ids[idx]);
         }
+      } else if (e.key === "Tab") {
+        e.preventDefault();
+        const at = MENU_ROWS.indexOf(rowRef.current);
+        selectRowRef.current(MENU_ROWS[(at + (e.shiftKey ? -1 : 1) + MENU_ROWS.length) % MENU_ROWS.length]);
       } else if (e.key === "Enter") {
         e.preventDefault();
         commitRef.current();
@@ -210,7 +276,7 @@ export default function Terminal({ fixture }: Props) {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [commitRef, selectMoveRef]);
+  }, [commitRef, selectMoveRef, selectRowRef]);
 
   function doLoad() {
     const loaded = loadSession();
@@ -233,14 +299,18 @@ export default function Terminal({ fixture }: Props) {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
-      const parsed = parseImported( String(reader.result));
+      const parsed = parseImported(String(reader.result));
       if (parsed) {
         dispatch({ type: "replaceWorld", world: parsed, status: "Imported." });
+      } else {
+        dispatch({ type: "understood", text: "That save is from an older build.", ok: false });
       }
     };
     reader.readAsText(file);
     e.target.value = "";
   }
+
+  const left = movesLeft(w.slot);
 
   return (
     <>
@@ -249,13 +319,17 @@ export default function Terminal({ fixture }: Props) {
         <header className="status">
           <span className="title glow">SOCIALSIM</span>
           <span className="field">
-            <b>{state.world.clock}</b>
+            <b>{formatClock(w.day, w.slot)}</b>
           </span>
-          <span className="field">
-            turn <b>{state.world.turn}</b>
+          <span className={`field ${left <= 4 ? "urgent" : ""}`}>
+            <b>{left}</b> moves left
+          </span>
+          <span className="daybar" aria-hidden>
+            <span className="daybar-fill" style={{ width: `${(left / 24) * 100}%` }} />
           </span>
           <span className="field">{state.status}</span>
           <span className="spacer" />
+          <button onClick={() => setShowMap((v) => !v)}>who&apos;s who</button>
           <button onClick={() => setUseServer((v) => !v)}>
             server: {useServer ? "on" : "off"}
             {useServer && aiMode === "mock" ? " (stub)" : ""}
@@ -274,15 +348,33 @@ export default function Terminal({ fixture }: Props) {
           />
         </header>
 
-        <SceneView scene={state.scene} world={state.world} playerId={playerId} />
+        <SceneView
+          scene={state.scene}
+          world={state.world}
+          playerId={playerId}
+          pairs={pairs}
+        />
 
         <ActionMenu
-          moves={MENU_MOVE_IDS}
+          row={row}
+          onSelectRow={selectRow}
+          moves={MENU_MOVE_IDS[row]}
           selectedMove={selectedMove}
           onSelectMove={selectMove}
           targets={targets}
           selectedTarget={selectedTarget}
           onSelectTarget={setSelectedTarget}
+          exits={exits}
+          selectedExit={selectedExit}
+          onSelectExit={setSelectedExit}
+          topics={topics}
+          selectedTopic={selectedTopic}
+          onSelectTopic={setSelectedTopic}
+          requests={requests}
+          nameOf={(id) => w.characters[id]?.name ?? id}
+          turn={w.turn}
+          onRespond={respond}
+          fightUnlocked={fightUnlocked}
           onCommit={commit}
           busy={state.busy}
           understoodAs={state.understoodAs}
@@ -299,6 +391,17 @@ export default function Terminal({ fixture }: Props) {
 
         <EventFeed feed={state.feed} />
       </div>
+
+      {showMap && (
+        <RelationshipMap
+          world={state.world}
+          onPick={(id) => {
+            dispatch({ type: "select", id });
+            setShowMap(false);
+          }}
+          onClose={() => setShowMap(false)}
+        />
+      )}
     </>
   );
 }

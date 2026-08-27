@@ -9,7 +9,8 @@ export type RelationshipField =
   | "trust"
   | "affection"
   | "respect"
-  | "fear";
+  | "fear"
+  | "anger";
 
 export type CognitionPath =
   | `/characters/${string}/relationships/${string}/${RelationshipField}`
@@ -17,7 +18,12 @@ export type CognitionPath =
   | `/characters/${string}/state/emotions/${string}`
   | `/characters/${string}/memories`
   | `/characters/${string}/beliefs`
-  | `/characters/${string}/goals`;
+  | `/characters/${string}/goals`
+  | `/characters/${string}/location`
+  | `/conversations/${string}/heat`
+  | `/conversations/${string}/topicId`
+  | `/topics/${string}/awareOf`
+  | `/phase`;
 
 export interface CognitionPatch {
   op: PatchOperation;
