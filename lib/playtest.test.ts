@@ -98,10 +98,10 @@ describe("NPC conversations are two-sided", () => {
 
       for (const t of ticks) {
         for (const r of t.log) {
-          if (!r.conversationId || r.conversationId.includes(playerId)) continue;
-          if (!speakers.has(r.conversationId)) speakers.set(r.conversationId, new Set());
-          speakers.get(r.conversationId)!.add(r.move.actor);
-          beats.set(r.conversationId, (beats.get(r.conversationId) ?? 0) + 1);
+          if (!r.threadId || r.threadId.includes(playerId)) continue;
+          if (!speakers.has(r.threadId)) speakers.set(r.threadId, new Set());
+          speakers.get(r.threadId)!.add(r.move.actor);
+          beats.set(r.threadId, (beats.get(r.threadId) ?? 0) + 1);
         }
       }
 
@@ -137,7 +137,7 @@ describe("NPC conversations are two-sided", () => {
     // transfer.
     let w = fresh();
     const ask: Move = {
-      id: "AskAbout",
+      id: "Ask",
       actor: playerId,
       target: "alice",
       args: { topicId: LEAK_TOPIC },
@@ -194,7 +194,7 @@ describe("overhearing has a limit", () => {
 
   it("does not broadcast a private answer to everyone standing in the room", () => {
     const result = runTick(fresh(), playerId, {
-      id: "AskAbout",
+      id: "Ask",
       actor: playerId,
       target: "alice",
       args: { topicId: LEAK_TOPIC },
@@ -346,7 +346,7 @@ describe("investigating beats not investigating", () => {
           evidenceHeldBy(w, id, LEAK_TOPIC).some((e) => !mine.includes(e.id)),
         );
         if (source) {
-          return { id: "AskAbout", actor: playerId, target: source, args: { topicId: LEAK_TOPIC } };
+          return { id: "Ask", actor: playerId, target: source, args: { topicId: LEAK_TOPIC } };
         }
         const exits = w.locations[w.characters[playerId].location].connectsTo;
         return { id: "GoTo", actor: playerId, args: { location: exits[0] } };
@@ -399,7 +399,7 @@ describe("the interpreter reads the player's word order", () => {
   it("takes the first move word in the input, not the first in the table", () => {
     const w = fresh();
     const result = interpretInput("just ask alice, don't fight", playerId, LEGAL, w);
-    expect(result.move.id).toBe("AskAbout");
+    expect(result.move.id).toBe("Ask");
   });
 
   it("falls back to a move that does nothing when it cannot parse", () => {

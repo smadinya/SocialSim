@@ -1,10 +1,16 @@
 /**
- * The shared contract. Every track imports this file.
+ * The shared contract. Every track imports from here.
  *
- * Update 1 ("Conversations, Consequences, and Somewhere To Go") is the one
- * deliberate unfreezing of this file — see `plan.md` §3. It folds in what
- * `ai/types.ts` used to mirror as a shim (that file is now deleted) and adds
- * conversations, topics, locations, time and the fifth relationship axis.
+ * Merged from two branches that grew it at the same time: Track A's expanded
+ * relationship axes and `Conversation`/`SocialRequest` model, and update 1's
+ * topics, locations, evidence, clock and memory fields.
+ *
+ * `ai/types.ts` used to mirror this as a shim (that file is now deleted) and
+ * adds nothing but drift.
+ *
+ * Where the two branches modelled the same idea, the resolution is recorded
+ * next to the type. The one that matters: `Conversation` is Track A's, and the
+ * mock engine's live pairwise exchange is `Thread`. See both below.
  */
 
 export type CharacterId = string;
@@ -12,17 +18,44 @@ export type MoveId = string;
 export type TopicId = string;
 export type LocationId = string;
 export type ConversationId = string;
+export type SocialRequestId = string;
+export type ThreadId = string;
 
-export type RelationshipAxis =
-  | "trust"
-  | "affection"
-  | "respect"
-  | "fear"
-  | "anger";
+// --- relationships --------------------------------------------------------
+
+/**
+ * Eight axes, from Track A. Update 1's five were a strict subset, and both
+ * branches independently arrived at `anger`, so this is additive.
+ *
+ * The array is the source of truth — `REL_FIELDS` in `lib/format.ts` spreads
+ * it, so adding an axis here reaches decay, status derivation, the effect
+ * tables and the inspector bars without touching any of them.
+ */
+export const RELATIONSHIP_AXES = [
+  "trust",
+  "gratitude",
+  "affection",
+  "respect",
+  "fear",
+  "anger",
+  "jealousy",
+  "hate",
+] as const;
+
+export type RelationshipAxis = (typeof RELATIONSHIP_AXES)[number];
+
+/** All axes, once a fixture or save has been through `normalizeWorld`. */
+export type RelationshipValues = Record<RelationshipAxis, number>;
 
 /**
  * Directed and pairwise: `relationships[A][B]` is A's view of B. Never write
  * both directions in one effect unless the move explicitly says so.
+ *
+ * Every axis is required *here*, in runtime state, because the decay pass and
+ * `statusFor` do arithmetic on all of them and a `number | undefined` at every
+ * read site is how that arithmetic silently becomes `NaN`. The tolerant shape
+ * for data that has not been migrated yet is `RelationshipState` below;
+ * `normalizeWorld` is the boundary between the two.
  *
  * `baseline` is what the end-of-tick decay pass pulls toward — without it,
  * `fear` was a ratchet with no move in the game able to lower it.
@@ -30,17 +63,31 @@ export type RelationshipAxis =
  * `flags` are discrete states a move sets or clears.
  * `history` is the ledger behind "who was what before".
  */
-export interface Relationship {
+export interface Relationship extends RelationshipValues {
+  baseline: RelationshipValues;
+  lastDelta: Partial<RelationshipValues>;
+  flags: string[];
+  history: RelationshipEvent[];
+}
+
+/**
+ * The loose shape at the edge: fixtures and saved games written before an axis
+ * existed. Only `normalizeWorld` and Track A's scoring helpers should accept
+ * it — everything downstream of normalization gets `Relationship`.
+ */
+export interface RelationshipState {
   trust: number;
   affection: number;
   respect: number;
   fear: number;
-  anger: number;
-
-  baseline: Record<RelationshipAxis, number>;
-  lastDelta: Partial<Record<RelationshipAxis, number>>;
-  flags: string[];
-  history: RelationshipEvent[];
+  gratitude?: number;
+  anger?: number;
+  jealousy?: number;
+  hate?: number;
+  baseline?: Partial<RelationshipValues>;
+  lastDelta?: Partial<RelationshipValues>;
+  flags?: string[];
+  history?: RelationshipEvent[];
 }
 
 export type RelationshipStatus =
@@ -57,9 +104,10 @@ export interface RelationshipEvent {
   turn: number;
   was: RelationshipStatus;
   now: RelationshipStatus;
-  /** Memory or move id that caused it. */
   because?: string;
 }
+
+// --- memory and belief ----------------------------------------------------
 
 export type MemoryTier = "direct" | "overheard" | "told";
 
@@ -85,7 +133,7 @@ export interface Memory {
   core: boolean;
 
   topicId?: TopicId;
-  conversationId?: ConversationId;
+  threadId?: ThreadId;
 }
 
 export interface Belief {
@@ -97,6 +145,8 @@ export interface Belief {
   confidence: number;
   sourceMemoryId?: string;
 }
+
+// --- characters -----------------------------------------------------------
 
 export interface CharacterState {
   mood: string;
@@ -119,7 +169,7 @@ export interface Character {
   goals: string[];
 
   location: LocationId;
-  activeConversationId?: ConversationId;
+  activeThreadId?: ThreadId;
 }
 
 // --- world furniture ------------------------------------------------------
@@ -128,7 +178,7 @@ export interface Location {
   id: LocationId;
   name: string;
   connectsTo: LocationId[];
-  /** Conversations here are not overheard by anyone outside. */
+  /** Exchanges here are not overheard by anyone outside. */
   private: boolean;
 }
 
@@ -155,23 +205,106 @@ export interface Topic {
   evidence: Evidence[];
 }
 
-export interface ConversationBeat {
+// --- conversations: Track A's model ---------------------------------------
+
+export type ConversationStatus = "active" | "paused" | "ended";
+export type SocialRequestStatus =
+  | "pending"
+  | "accepted"
+  | "refused"
+  | "fulfilled"
+  | "failed"
+  | "withdrawn";
+
+export interface ConversationTopic {
+  /** Stable category used by rules and memory retrieval. */
+  kind: string;
+  subject?: CharacterId;
+  object?: CharacterId;
+  /** Player-facing phrasing, e.g. "Whether Bob betrayed Alice". */
+  summary: string;
+  salience: number;
+}
+
+export interface ConversationTurn {
+  turn: number;
+  speaker: CharacterId;
+  moveId: MoveId;
+  target?: CharacterId;
+  eventId?: string;
+}
+
+/**
+ * Authoritative state for an interaction that is happening now. Long-term
+ * recollection belongs in each character's Memory array, not in this record.
+ * Part 2 will enforce that a character appears in at most one active record.
+ *
+ * This is Track A's model and it owns the name. The mock engine does not use
+ * it yet — see `Thread`.
+ */
+export interface Conversation {
+  id: ConversationId;
+  participants: CharacterId[];
+  location: LocationId;
+  status: ConversationStatus;
+  startedTurn: number;
+  lastActiveTurn: number;
+  currentSpeaker?: CharacterId;
+  expectedResponder?: CharacterId;
+  primaryTopic: ConversationTopic;
+  secondaryTopics: ConversationTopic[];
+  summary: string;
+  recentTurns: ConversationTurn[];
+  pendingRequestIds: SocialRequestId[];
+}
+
+/** A direct question/request survives the tick in which it was asked. */
+export interface SocialRequest {
+  id: SocialRequestId;
+  conversationId: ConversationId;
+  requester: CharacterId;
+  recipient: CharacterId;
+  subject: string;
+  about?: CharacterId;
+  createdTurn: number;
+  deadlineTurn?: number;
+  importance: number;
+  status: SocialRequestStatus;
+  responseEventId?: string;
+  resolutionEventId?: string;
+}
+
+// --- threads: what the mock engine actually runs --------------------------
+
+export interface ThreadBeat {
   turn: number;
   actor: CharacterId;
   moveId: MoveId;
   heatAfter: number;
 }
 
-export interface Conversation {
-  id: ConversationId;
+/**
+ * The live pairwise exchange `lib/mockEngine.ts` resolves against.
+ *
+ * Both branches shipped a type called `Conversation` and they are not the same
+ * object: Track A's carries turn-taking and topic salience for the `sim/` port,
+ * this one carries `heat` and `beats` for the engine being played today. One
+ * name for two models is the two-sources-of-truth bug this repo has already
+ * been bitten by, so the engine's is named for what it is.
+ *
+ * This is scaffolding with a deadline: when the `sim/` port lands, `Thread`
+ * folds into `Conversation` and disappears.
+ */
+export interface Thread {
+  id: ThreadId;
   participants: CharacterId[];
   location: LocationId;
   topicId?: TopicId;
   startedTurn: number;
   lastTurn: number;
-  /** 0..100. Above 60 this conversation is an argument. */
+  /** 0..100. Above 60 this exchange is an argument. */
   heat: number;
-  beats: ConversationBeat[];
+  beats: ThreadBeat[];
   status: "open" | "closed";
 }
 
@@ -209,8 +342,17 @@ export interface WorldState {
 
   locations: Record<LocationId, Location>;
   topics: Record<TopicId, Topic>;
-  conversations: Record<ConversationId, Conversation>;
+
+  /** What the mock engine resolves against. */
+  threads: Record<ThreadId, Thread>;
   pendingRequests: PendingRequest[];
+
+  /**
+   * Track A's model, populated by the `sim/` port. Optional until that port
+   * lands and takes over from `threads`.
+   */
+  conversations?: Record<ConversationId, Conversation>;
+  socialRequests?: Record<SocialRequestId, SocialRequest>;
 
   scene: SceneState;
 
@@ -220,6 +362,8 @@ export interface WorldState {
 
   rngSeed: number;
 }
+
+// --- moves and events -----------------------------------------------------
 
 export interface Move {
   id: MoveId;
@@ -235,18 +379,29 @@ export interface SimEvent {
 
   actor?: CharacterId;
   target?: CharacterId;
+
   description: string;
 
   OnScene: CharacterId[];
 }
 
-// --- the AI seam ----------------------------------------------------------
+export interface ResolvedMove {
+  move: Move;
+  witnessedByPlayer: boolean;
+  threadId?: ThreadId;
+}
 
-/**
- * What a model is given to write one line. Everything here is the speaker's
- * own view — there is deliberately no `WorldState` on this type, so prompt
- * assembly has nothing to reach into for a third party's real numbers.
- */
+export interface RelationshipDelta {
+  sourceActor: CharacterId;
+  from: CharacterId;
+  to: CharacterId;
+  field: RelationshipAxis;
+  before: number;
+  after: number;
+  threadId?: ThreadId;
+}
+
+/** Track B realizes these deterministic facts as dialogue. */
 export interface PendingUtterance {
   speaker: CharacterId;
   move: Move;
@@ -260,20 +415,38 @@ export interface PendingUtterance {
   speakerName: string;
   traits: string[];
   targetName?: string;
-  /** The third party in "tell X about Y" — talked about, never addressed. */
+  /** The third party in a three-party move — talked about, not addressed. */
   subjectName?: string;
-  /** Every character name in the world, for the hallucination check. */
   castNames: string[];
 
-  /** What this conversation is about, if anything. Label only — never evidence. */
+  /** The topic LABEL only. Evidence claims never reach a prompt. */
   topicLabel?: string;
-  /** The last few beats, so a reply doesn't open as if nothing preceded it. */
-  conversationBeats: string[];
-  /** 0..100. Drives how hot the line should read. */
+  threadBeats: string[];
   heat: number;
+}
+
+export interface Utterance {
+  speaker: CharacterId;
+  moveId: MoveId;
+  line: string;
+  deliveryNote?: string;
 }
 
 export interface RealizedLine {
   line: string;
   deliveryNote?: string;
+}
+
+/** The shared multi-actor result contract. */
+export interface TickResult {
+  state: WorldState;
+  events: SimEvent[];
+  log: ResolvedMove[];
+  deltas: RelationshipDelta[];
+  utterances: Utterance[];
+  /** Events from the night pass, rendered as a "while you slept" digest. */
+  overnight?: SimEvent[];
+  /** Track B's future input. */
+  pendingUtterances?: PendingUtterance[];
+  eligibleActors?: CharacterId[];
 }

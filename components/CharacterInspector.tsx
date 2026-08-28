@@ -104,7 +104,7 @@ export default function CharacterInspector({
                     <div className="rel-flags">{rel.flags.join(" · ")}</div>
                   )}
                   {REL_FIELDS.map((field) => (
-                    <TrustBar key={field} field={field} value={rel[field]} />
+                    <TrustBar key={field} field={field} value={rel[field] ?? 0} />
                   ))}
                 </div>
               );

@@ -11,8 +11,8 @@ export type {
   CharacterId,
   Character,
   Conversation,
-  ConversationBeat,
-  ConversationId,
+  ConversationTopic,
+  ConversationTurn,
   Evidence,
   Location,
   LocationId,
@@ -22,21 +22,33 @@ export type {
   Move,
   MoveId,
   PendingRequest,
+  PendingUtterance,
+  RealizedLine,
   Relationship,
   RelationshipAxis,
+  RelationshipDelta,
   RelationshipEvent,
+  RelationshipState,
   RelationshipStatus,
+  RelationshipValues,
+  ResolvedMove,
   ScenarioPhase,
   SimEvent,
+  SocialRequest,
+  Thread,
+  ThreadBeat,
+  ThreadId,
+  TickResult,
   Topic,
   TopicId,
+  Utterance,
   WorldState,
 } from "@sim/types";
 
 /**
- * The four — now five — numeric axes. Deliberately NOT `keyof Relationship`:
- * that type picked up `baseline`, `lastDelta`, `flags` and `history` in
- * update 1 and every `rel[field]` read stopped being a number.
+ * The numeric axes. Deliberately NOT `keyof Relationship`: that type picked up
+ * `baseline`, `lastDelta`, `flags` and `history` in update 1 and every
+ * `rel[field]` read stopped being a number.
  */
 export type RelationshipField = RelationshipAxis;
 
@@ -44,37 +56,10 @@ export interface WorldFixture extends WorldState {
   playerId: CharacterId;
 }
 
-export interface Utterance {
+export interface SceneLineSource {
   speaker: CharacterId;
   moveId: MoveId;
   line: string;
-  deliveryNote?: string;
-}
-
-export interface ResolvedMove {
-  move: Move;
-  witnessedByPlayer: boolean;
-  conversationId?: string;
-}
-
-export interface RelationshipDelta {
-  sourceActor: CharacterId;
-  from: CharacterId;
-  to: CharacterId;
-  field: RelationshipField;
-  before: number;
-  after: number;
-  conversationId?: string;
-}
-
-export interface TickResult {
-  state: WorldState;
-  utterances: Utterance[];
-  events: SimEvent[];
-  log: ResolvedMove[];
-  deltas: RelationshipDelta[];
-  /** Events from the night pass, rendered as a "while you slept" digest. */
-  overnight?: SimEvent[];
 }
 
 export interface InterpretResult {
@@ -82,3 +67,6 @@ export interface InterpretResult {
   understoodAs: string;
   ok: boolean;
 }
+
+export type { SimEvent as WorldEvent };
+export type { Move as PlayerMove };

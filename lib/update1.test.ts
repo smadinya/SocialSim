@@ -120,7 +120,7 @@ describe("U2 conversations", () => {
 
   it("carries the topic so the scene can say what it's about", () => {
     const after = runTick(fresh(), playerId, {
-      id: "AskAbout",
+      id: "Ask",
       actor: playerId,
       target: "alice",
       args: { topicId: "the-leak" },

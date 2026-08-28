@@ -49,7 +49,6 @@
       "private": false
     }
   },
-  "conversations": {},
   "pendingRequests": [],
   "topics": {
     "the-leak": {
@@ -169,16 +168,22 @@
       "relationships": {
         "alice": {
           "trust": 50,
+          "gratitude": 0,
           "affection": 48,
           "respect": 50,
           "fear": 5,
           "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
           "baseline": {
             "trust": 50,
+            "gratitude": 0,
             "affection": 48,
             "respect": 50,
             "fear": 5,
-            "anger": 0
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
           },
           "lastDelta": {},
           "flags": [],
@@ -186,16 +191,22 @@
         },
         "bob": {
           "trust": 42,
+          "gratitude": 0,
           "affection": 40,
           "respect": 45,
           "fear": 12,
           "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
           "baseline": {
             "trust": 42,
+            "gratitude": 0,
             "affection": 40,
             "respect": 45,
             "fear": 12,
-            "anger": 0
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
           },
           "lastDelta": {},
           "flags": [],
@@ -203,16 +214,22 @@
         },
         "calum": {
           "trust": 48,
+          "gratitude": 0,
           "affection": 45,
           "respect": 46,
           "fear": 6,
           "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
           "baseline": {
             "trust": 48,
+            "gratitude": 0,
             "affection": 45,
             "respect": 46,
             "fear": 6,
-            "anger": 0
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
           },
           "lastDelta": {},
           "flags": [],
@@ -220,16 +237,22 @@
         },
         "dana": {
           "trust": 52,
+          "gratitude": 0,
           "affection": 50,
           "respect": 50,
           "fear": 5,
           "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
           "baseline": {
             "trust": 52,
+            "gratitude": 0,
             "affection": 50,
             "respect": 50,
             "fear": 5,
-            "anger": 0
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
           },
           "lastDelta": {},
           "flags": [],
@@ -287,16 +310,22 @@
       "relationships": {
         "you": {
           "trust": 55,
+          "gratitude": 0,
           "affection": 50,
           "respect": 45,
           "fear": 5,
           "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
           "baseline": {
             "trust": 55,
+            "gratitude": 0,
             "affection": 50,
             "respect": 45,
             "fear": 5,
-            "anger": 0
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
           },
           "lastDelta": {},
           "flags": [],
@@ -304,16 +333,22 @@
         },
         "bob": {
           "trust": 34,
+          "gratitude": 0,
           "affection": 40,
           "respect": 35,
           "fear": 20,
           "anger": 15,
+          "jealousy": 0,
+          "hate": 0,
           "baseline": {
             "trust": 34,
+            "gratitude": 0,
             "affection": 40,
             "respect": 35,
             "fear": 20,
-            "anger": 15
+            "anger": 15,
+            "jealousy": 0,
+            "hate": 0
           },
           "lastDelta": {},
           "flags": [],
@@ -321,16 +356,22 @@
         },
         "calum": {
           "trust": 60,
+          "gratitude": 0,
           "affection": 45,
           "respect": 50,
           "fear": 8,
           "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
           "baseline": {
             "trust": 60,
+            "gratitude": 0,
             "affection": 45,
             "respect": 50,
             "fear": 8,
-            "anger": 0
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
           },
           "lastDelta": {},
           "flags": [],
@@ -338,16 +379,22 @@
         },
         "dana": {
           "trust": 75,
+          "gratitude": 0,
           "affection": 68,
           "respect": 60,
           "fear": 5,
           "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
           "baseline": {
             "trust": 75,
+            "gratitude": 0,
             "affection": 68,
             "respect": 60,
             "fear": 5,
-            "anger": 0
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
           },
           "lastDelta": {},
           "flags": [],
@@ -425,16 +472,22 @@
       "relationships": {
         "you": {
           "trust": 40,
+          "gratitude": 0,
           "affection": 35,
           "respect": 42,
           "fear": 18,
           "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
           "baseline": {
             "trust": 40,
+            "gratitude": 0,
             "affection": 35,
             "respect": 42,
             "fear": 18,
-            "anger": 0
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
           },
           "lastDelta": {},
           "flags": [],
@@ -442,16 +495,22 @@
         },
         "alice": {
           "trust": 45,
+          "gratitude": 0,
           "affection": 30,
           "respect": 40,
           "fear": 25,
           "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
           "baseline": {
             "trust": 45,
+            "gratitude": 0,
             "affection": 30,
             "respect": 40,
             "fear": 25,
-            "anger": 0
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
           },
           "lastDelta": {},
           "flags": [],
@@ -459,16 +518,22 @@
         },
         "calum": {
           "trust": 55,
+          "gratitude": 0,
           "affection": 72,
           "respect": 50,
           "fear": 10,
           "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
           "baseline": {
             "trust": 55,
+            "gratitude": 0,
             "affection": 72,
             "respect": 50,
             "fear": 10,
-            "anger": 0
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
           },
           "lastDelta": {},
           "flags": [],
@@ -476,16 +541,22 @@
         },
         "dana": {
           "trust": 30,
+          "gratitude": 0,
           "affection": 25,
           "respect": 38,
           "fear": 35,
           "anger": 20,
+          "jealousy": 0,
+          "hate": 0,
           "baseline": {
             "trust": 30,
+            "gratitude": 0,
             "affection": 25,
             "respect": 38,
             "fear": 35,
-            "anger": 20
+            "anger": 20,
+            "jealousy": 0,
+            "hate": 0
           },
           "lastDelta": {},
           "flags": [],
@@ -544,16 +615,22 @@
       "relationships": {
         "you": {
           "trust": 50,
+          "gratitude": 0,
           "affection": 45,
           "respect": 48,
           "fear": 6,
           "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
           "baseline": {
             "trust": 50,
+            "gratitude": 0,
             "affection": 45,
             "respect": 48,
             "fear": 6,
-            "anger": 0
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
           },
           "lastDelta": {},
           "flags": [],
@@ -561,16 +638,22 @@
         },
         "alice": {
           "trust": 58,
+          "gratitude": 0,
           "affection": 50,
           "respect": 52,
           "fear": 8,
           "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
           "baseline": {
             "trust": 58,
+            "gratitude": 0,
             "affection": 50,
             "respect": 52,
             "fear": 8,
-            "anger": 0
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
           },
           "lastDelta": {},
           "flags": [],
@@ -578,16 +661,22 @@
         },
         "bob": {
           "trust": 60,
+          "gratitude": 0,
           "affection": 55,
           "respect": 58,
           "fear": 12,
           "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
           "baseline": {
             "trust": 60,
+            "gratitude": 0,
             "affection": 55,
             "respect": 58,
             "fear": 12,
-            "anger": 0
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
           },
           "lastDelta": {},
           "flags": [],
@@ -595,16 +684,22 @@
         },
         "dana": {
           "trust": 52,
+          "gratitude": 0,
           "affection": 48,
           "respect": 50,
           "fear": 10,
           "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
           "baseline": {
             "trust": 52,
+            "gratitude": 0,
             "affection": 48,
             "respect": 50,
             "fear": 10,
-            "anger": 0
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
           },
           "lastDelta": {},
           "flags": [],
@@ -662,16 +757,22 @@
       "relationships": {
         "you": {
           "trust": 48,
+          "gratitude": 0,
           "affection": 42,
           "respect": 45,
           "fear": 8,
           "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
           "baseline": {
             "trust": 48,
+            "gratitude": 0,
             "affection": 42,
             "respect": 45,
             "fear": 8,
-            "anger": 0
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
           },
           "lastDelta": {},
           "flags": [],
@@ -679,16 +780,22 @@
         },
         "alice": {
           "trust": 78,
+          "gratitude": 0,
           "affection": 70,
           "respect": 65,
           "fear": 4,
           "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
           "baseline": {
             "trust": 78,
+            "gratitude": 0,
             "affection": 70,
             "respect": 65,
             "fear": 4,
-            "anger": 0
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
           },
           "lastDelta": {},
           "flags": [],
@@ -696,16 +803,22 @@
         },
         "bob": {
           "trust": 22,
+          "gratitude": 0,
           "affection": 15,
           "respect": 30,
           "fear": 30,
           "anger": 45,
+          "jealousy": 0,
+          "hate": 0,
           "baseline": {
             "trust": 22,
+            "gratitude": 0,
             "affection": 15,
             "respect": 30,
             "fear": 30,
-            "anger": 45
+            "anger": 45,
+            "jealousy": 0,
+            "hate": 0
           },
           "lastDelta": {},
           "flags": [],
@@ -713,16 +826,22 @@
         },
         "calum": {
           "trust": 55,
+          "gratitude": 0,
           "affection": 50,
           "respect": 52,
           "fear": 10,
           "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
           "baseline": {
             "trust": 55,
+            "gratitude": 0,
             "affection": 50,
             "respect": 52,
             "fear": 10,
-            "anger": 0
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
           },
           "lastDelta": {},
           "flags": [],
@@ -763,5 +882,6 @@
         "Expose whoever leaked the plan"
       ]
     }
-  }
+  },
+  "threads": {}
 }

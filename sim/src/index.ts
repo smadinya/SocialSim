@@ -7,4 +7,6 @@ export * from "./cognition/applyPatch";
 export * from "./cognition/validatePatch";
 export * from "./moves/catalog";
 export * from "./moves/legalMoves";
+export * from "./moves/effects";
 export * from "./rng/seededRng";
+export * from "./relationships";

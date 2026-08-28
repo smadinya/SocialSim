@@ -22,11 +22,12 @@ import { REL_FIELDS } from "@/lib/format";
 function axisLine(u: PendingUtterance): string {
   const rel = u.relationshipSnapshot;
   return REL_FIELDS.map((f) => {
-    const axis = f as RelationshipAxis;
+    const axis: RelationshipAxis = f;
+    const value = rel[axis] ?? 0;
     const delta = rel.lastDelta[axis];
-    if (delta === undefined || delta === 0) return `${axis} ${rel[axis]}`;
+    if (delta === undefined || delta === 0) return `${axis} ${value}`;
     const dir = delta > 0 ? "up" : "down";
-    return `${axis} ${rel[axis]} (${dir} from ${rel[axis] - delta} this turn)`;
+    return `${axis} ${value} (${dir} from ${value - delta} this turn)`;
   }).join(", ");
 }
 
@@ -68,10 +69,10 @@ export function realizePrompt(u: PendingUtterance): string {
     "WHAT THEY ARE REMEMBERING RIGHT NOW:",
     memories,
     "",
-    ...(u.conversationBeats.length
+    ...(u.threadBeats.length
       ? [
           "THIS CONVERSATION SO FAR (oldest first):",
-          ...u.conversationBeats.map((b) => `- ${b}`),
+          ...u.threadBeats.map((b) => `- ${b}`),
           "",
         ]
       : []),

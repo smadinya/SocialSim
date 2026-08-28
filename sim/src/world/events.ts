@@ -9,7 +9,7 @@ export function createMoveEvent(
   move: Move,
 ): SimEvent {
   return {
-    id: `event-${world.turn + 1}`,
+    id: `event-${world.turn + 1}-${move.actor}-${move.id}`,
     type: "move",
     turn: world.turn + 1,
 

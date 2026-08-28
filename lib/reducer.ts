@@ -174,7 +174,7 @@ function buildPlan(
     for (let i = deltasLeft.length - 1; i >= 0; i--) {
       const delta = deltasLeft[i];
       if (delta.sourceActor !== move.actor) continue;
-      if (delta.conversationId !== resolved.conversationId) continue;
+      if (delta.threadId !== resolved.threadId) continue;
       deltasLeft.splice(i, 1);
       steps.push({
         kind: "delta",

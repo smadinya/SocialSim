@@ -84,9 +84,14 @@ export const STATUS_BLURB: Record<RelationshipStatus, string> = {
 export const DECAY_RATES: Record<RelationshipAxis, number> = {
   fear: 0.12,
   anger: 0.15,
+  jealousy: 0.08,
   affection: 0.04,
   respect: 0.03,
+  gratitude: 0.05,
   trust: 0.02,
+  // The one that does not fade. Hate is what a relationship does not come
+  // back from, which is the whole reason it is a separate axis from anger.
+  hate: 0.01,
 };
 
 /** A night is worth this many turns of decay. Sleeping on it. */

@@ -8,8 +8,14 @@ const KEY = "socialsim-save";
  * half-initialised in ways that surface later as crashes rather than as a
  * failed load. There is no migration: the fixture was rewritten, so an old
  * save points at a scenario that no longer exists.
+ *
+ * v2 -> v3 on the Track A merge. Three more relationship axes, and
+ * `conversations` became `threads` when `Conversation` was handed to Track A's
+ * model — so a v2 blob has the engine's exchanges under a key nothing reads,
+ * which loads as a world where nobody is talking to anybody and no error is
+ * raised. Rejecting it is the honest outcome.
  */
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 export interface SaveBlob {
   version: number;

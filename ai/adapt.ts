@@ -7,6 +7,8 @@ import type {
   WorldState,
 } from "@sim/types";
 import type { RelationshipDelta, ResolvedMove } from "@/lib/viewTypes";
+import { RELATIONSHIP_AXES } from "@sim/types";
+import type { RelationshipValues } from "@sim/types";
 import { retrieve } from "@ai/retrieval";
 import { beatLines } from "@/lib/conversations";
 
@@ -45,13 +47,13 @@ function deltaFor(
   return out;
 }
 
+const ZEROED = Object.fromEntries(
+  RELATIONSHIP_AXES.map((axis) => [axis, 0]),
+) as RelationshipValues;
+
 const EMPTY: Relationship = {
-  trust: 0,
-  affection: 0,
-  respect: 0,
-  fear: 0,
-  anger: 0,
-  baseline: { trust: 0, affection: 0, respect: 0, fear: 0, anger: 0 },
+  ...ZEROED,
+  baseline: { ...ZEROED },
   lastDelta: {},
   flags: [],
   history: [],
@@ -75,8 +77,8 @@ export function toPendingUtterance(
       }
     : EMPTY;
 
-  const conversation = resolved.conversationId
-    ? world.conversations[resolved.conversationId]
+  const conversation = resolved.threadId
+    ? world.threads[resolved.threadId]
     : null;
 
   // The topic LABEL only. Evidence never reaches a prompt: it is the one
@@ -103,7 +105,7 @@ export function toPendingUtterance(
       .filter((id) => id !== move.actor)
       .map((id) => world.characters[id].name),
     topicLabel,
-    conversationBeats: beatLines(world, conversation),
+    threadBeats: beatLines(world, conversation),
     heat: conversation?.heat ?? 0,
   };
 }

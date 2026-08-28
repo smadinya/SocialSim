@@ -43,7 +43,8 @@ describe("prompt assembly", () => {
 
         const own = new Set(
           REL_FIELDS.map(
-            (f) => `${f} ${world.characters[speaker].relationships[target][f]}`,
+            (f) =>
+              `${f} ${world.characters[speaker].relationships[target][f] ?? 0}`,
           ),
         );
         // The speaker's own view of the listener, and nothing else.

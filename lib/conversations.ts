@@ -1,8 +1,8 @@
 import type {
   CharacterId,
-  Conversation,
-  ConversationBeat,
-  ConversationId,
+  Thread,
+  ThreadBeat,
+  ThreadId,
   Move,
   MoveId,
   TopicId,
@@ -38,22 +38,22 @@ export function pairKey(a: CharacterId, b: CharacterId): string {
   return [a, b].sort().join("~");
 }
 
-export function openConversations(world: WorldState): Conversation[] {
-  return Object.values(world.conversations).filter((c) => c.status === "open");
+export function openConversations(world: WorldState): Thread[] {
+  return Object.values(world.threads).filter((c) => c.status === "open");
 }
 
 export function conversationFor(
   world: WorldState,
   id: CharacterId,
-): Conversation | null {
-  const cid = world.characters[id]?.activeConversationId;
+): Thread | null {
+  const cid = world.characters[id]?.activeThreadId;
   if (!cid) return null;
-  const conversation = world.conversations[cid];
+  const conversation = world.threads[cid];
   return conversation && conversation.status === "open" ? conversation : null;
 }
 
 export function partnerOf(
-  conversation: Conversation,
+  conversation: Thread,
   id: CharacterId,
 ): CharacterId | undefined {
   return conversation.participants.find((p) => p !== id);
@@ -63,7 +63,7 @@ export function between(
   world: WorldState,
   a: CharacterId,
   b: CharacterId,
-): Conversation | null {
+): Thread | null {
   const mine = conversationFor(world, a);
   if (mine && mine.participants.includes(b)) return mine;
   return null;
@@ -81,7 +81,7 @@ export function openOrJoin(
   actor: CharacterId,
   target: CharacterId,
   topicId?: TopicId,
-): Conversation {
+): Thread {
   const existing = between(world, actor, target);
   if (existing) {
     existing.lastTurn = world.turn;
@@ -97,15 +97,15 @@ export function openOrJoin(
   // single turn: Dana confronts Bob, Alice pulls Dana away, Bob turns back to
   // Dana — three moves, one tick. The third `openOrJoin` computed the id the
   // first one had and overwrote the record in place, so the confrontation's
-  // beats and heat vanished from a world that still held a `ConversationId`
+  // beats and heat vanished from a world that still held a `ThreadId`
   // pointing at them. Anything reading history back — the no-repeats rule, the
   // reopen cooldown, `beatLines` for a prompt — was reading a thread the
   // engine had quietly deleted.
   const base = `conv-${world.turn}-${pairKey(actor, target)}`;
-  let id: ConversationId = base;
-  for (let n = 2; world.conversations[id]; n++) id = `${base}-${n}`;
+  let id: ThreadId = base;
+  for (let n = 2; world.threads[id]; n++) id = `${base}-${n}`;
 
-  const conversation: Conversation = {
+  const conversation: Thread = {
     id,
     participants: [actor, target],
     location: world.characters[actor]?.location ?? world.scene.location,
@@ -117,16 +117,16 @@ export function openOrJoin(
     status: "open",
   };
 
-  world.conversations[id] = conversation;
-  if (world.characters[actor]) world.characters[actor].activeConversationId = id;
-  if (world.characters[target]) world.characters[target].activeConversationId = id;
+  world.threads[id] = conversation;
+  if (world.characters[actor]) world.characters[actor].activeThreadId = id;
+  if (world.characters[target]) world.characters[target].activeThreadId = id;
   return conversation;
 }
 
 /** Record a move as a beat and move the heat. Returns the heat after. */
 export function advance(
   world: WorldState,
-  conversation: Conversation,
+  conversation: Thread,
   move: Move,
   turn: number,
 ): number {
@@ -165,7 +165,7 @@ export function recentlyClosed(
   turn: number,
 ): boolean {
   const key = pairKey(a, b);
-  return Object.values(world.conversations).some(
+  return Object.values(world.threads).some(
     (c) =>
       c.status === "closed" &&
       pairKey(c.participants[0], c.participants[1]) === key &&
@@ -183,7 +183,7 @@ export function recentlyClosed(
  * two consecutive turns either side of a thread boundary with the same
  * sentence both times.
  *
- * `ConversationBeat` carries no target, so it comes from the pair: a
+ * `ThreadBeat` carries no target, so it comes from the pair: a
  * conversation has exactly two participants and one of them is the actor.
  */
 export interface LastBeat {
@@ -197,7 +197,7 @@ export function lastBeatBy(
   actor: CharacterId,
 ): LastBeat | undefined {
   let best: LastBeat | undefined;
-  for (const conversation of Object.values(world.conversations)) {
+  for (const conversation of Object.values(world.threads)) {
     const other = conversation.participants.find((p) => p !== actor);
     for (const beat of conversation.beats) {
       if (beat.actor !== actor) continue;
@@ -214,21 +214,21 @@ export function close(world: WorldState, id: CharacterId): void {
   conversation.status = "closed";
   for (const p of conversation.participants) {
     const character = world.characters[p];
-    if (character && character.activeConversationId === conversation.id) {
-      delete character.activeConversationId;
+    if (character && character.activeThreadId === conversation.id) {
+      delete character.activeThreadId;
     }
   }
 }
 
 export function closeConversation(
   world: WorldState,
-  conversation: Conversation,
+  conversation: Thread,
 ): void {
   conversation.status = "closed";
   for (const p of conversation.participants) {
     const character = world.characters[p];
-    if (character && character.activeConversationId === conversation.id) {
-      delete character.activeConversationId;
+    if (character && character.activeThreadId === conversation.id) {
+      delete character.activeThreadId;
     }
   }
 }
@@ -260,7 +260,7 @@ export function settle(world: WorldState, turn: number): void {
 /** The last few beats as prompt lines. Never numbers — just what happened. */
 export function beatLines(
   world: WorldState,
-  conversation: Conversation | null,
+  conversation: Thread | null,
   limit = 3,
 ): string[] {
   if (!conversation) return [];
@@ -280,7 +280,7 @@ export function heatLabel(heat: number): string {
 
 /** Who is talking to whom right now, at this location. */
 export interface TalkingPair {
-  id: ConversationId;
+  id: ThreadId;
   a: CharacterId;
   b: CharacterId;
   aName: string;
@@ -313,7 +313,7 @@ export function talkingPairs(
 
 /** Moves that are about a subject rather than only a person. */
 export const TOPICAL_MOVES: MoveId[] = [
-  "AskAbout",
+  "Ask",
   "RevealSecret",
   "SpreadRumor",
   "Confront",

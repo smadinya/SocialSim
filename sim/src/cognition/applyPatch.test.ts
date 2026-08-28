@@ -27,6 +27,19 @@ describe("cognition patches", () => {
     expect(world.characters.alice.relationships.bob.trust).toBe(0);
   });
 
+  it("supports the expanded relationship axes", () => {
+    const world = seed();
+
+    for (const field of ["gratitude", "anger", "jealousy", "hate"] as const) {
+      const path = `/characters/alice/relationships/bob/${field}` as const;
+      expect(applyCognitionPatch(world, { op: "set", path, value: 40 }).applied)
+        .toBe(true);
+      expect(applyCognitionPatch(world, { op: "increment", path, value: 70 }).applied)
+        .toBe(true);
+      expect(world.characters.alice.relationships.bob[field]).toBe(100);
+    }
+  });
+
   it("merges one belief out of the list by id", () => {
     const world = seed();
     const belief = world.characters.you.beliefs[0];

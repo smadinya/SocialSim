@@ -1,6 +1,6 @@
 import type {
   CharacterId,
-  Conversation,
+  Thread,
   Evidence,
   LocationId,
   Move,
@@ -8,6 +8,7 @@ import type {
   PendingRequest,
   RelationshipDelta,
   RelationshipField,
+  RelationshipValues,
   ResolvedMove,
   SimEvent,
   TickResult,
@@ -29,7 +30,7 @@ import {
   isCoreMove,
   stubDialogue,
 } from "./moveMeta";
-import { clamp, relationshipTone } from "./format";
+import { REL_FIELDS, clamp, relationshipTone } from "./format";
 import { MOVES_PER_DAY, dayIsSpent } from "./clock";
 import {
   NIGHT_DECAY_MULTIPLIER,
@@ -144,7 +145,7 @@ interface Tendency {
 /**
  * Standing wants. Weights stay low so the NPC-to-NPC drama isn't drowned out.
  *
- * `AskAbout` entries are what make the mystery move without the player: Dana
+ * `Ask` entries are what make the mystery move without the player: Dana
  * and Alice compare notes on their own, and evidence spreads whether or not
  * anyone is watching.
  */
@@ -159,14 +160,14 @@ const TENDENCIES: Record<CharacterId, Tendency[]> = {
   dana: [
     { moveId: "Confront", target: "bob", weight: 3 },
     { moveId: "Defend", target: "alice", weight: 2 },
-    { moveId: "AskAbout", target: "calum", weight: 2 },
+    { moveId: "Ask", target: "calum", weight: 2 },
     // Weight 1 out of 8 meant Dana could go a whole game without once
     // addressing the player. She promised Alice she would find out who
     // talked; the newcomer nobody has a history with is an obvious ally.
     { moveId: "AskForHelp", target: "you", weight: 2 },
   ],
   alice: [
-    { moveId: "AskAbout", target: "dana", weight: 3 },
+    { moveId: "Ask", target: "dana", weight: 3 },
     { moveId: "AskForHelp", target: "dana", weight: 2 },
     { moveId: "Confront", target: "bob", weight: 2 },
     { moveId: "AskForHelp", target: "you", weight: 2 },
@@ -175,7 +176,7 @@ const TENDENCIES: Record<CharacterId, Tendency[]> = {
   calum: [
     { moveId: "Greet", target: "dana", weight: 2 },
     { moveId: "AskForHelp", target: "alice", weight: 1 },
-    { moveId: "AskAbout", target: "you", weight: 1 },
+    { moveId: "Ask", target: "you", weight: 1 },
     { moveId: "Greet", target: "you", weight: 1 },
   ],
 };
@@ -197,7 +198,7 @@ const RESPONSES: Record<string, { warm: MoveId; cold: MoveId }> = {
   Insult: { warm: "Confront", cold: "Insult" },
   GiveGift: { warm: "Comply", cold: "Greet" },
   AskForHelp: { warm: "Comply", cold: "Refuse" },
-  AskAbout: { warm: "RevealSecret", cold: "Refuse" },
+  Ask: { warm: "RevealSecret", cold: "Refuse" },
   Apologize: { warm: "Comply", cold: "Refuse" },
   Reassure: { warm: "Comply", cold: "Refuse" },
   SpreadRumor: { warm: "Confront", cold: "Confront" },
@@ -371,7 +372,7 @@ function applyEffects(
   move: Move,
   deltas: RelationshipDelta[],
   heat: number,
-  conversationId?: string,
+  threadId?: string,
 ): void {
   const multiplier = heatMultiplier(heat);
 
@@ -399,7 +400,7 @@ function applyEffects(
         field,
         before,
         after,
-        conversationId,
+        threadId,
       });
     }
   }
@@ -413,7 +414,7 @@ const MEMORY_CAP = 12;
 function verbFor(moveId: MoveId): string {
   const verbs: Record<string, string> = {
     Greet: "greeted",
-    AskAbout: "asked questions of",
+    Ask: "asked questions of",
     Confront: "confronted",
     GiveGift: "gave a gift to",
     SpreadRumor: "spread a rumor about",
@@ -438,7 +439,7 @@ function verbFor(moveId: MoveId): string {
 interface MemoryContext {
   turn: number;
   heat: number;
-  conversationId?: string;
+  threadId?: string;
   topicId?: TopicId;
 }
 
@@ -481,7 +482,7 @@ function writeMemory(
     accurate: true,
     core,
     topicId: ctx.topicId,
-    conversationId: ctx.conversationId,
+    threadId: ctx.threadId,
   });
 
   evictOrdinary(character.memories);
@@ -714,16 +715,16 @@ function expireRequests(
 /**
  * What this move is about.
  *
- * Only `AskAbout` and `SpreadRumor` default to the leak: both are meaningless
+ * Only `Ask` and `SpreadRumor` default to the leak: both are meaningless
  * without a subject, and the leak is the only topic carrying evidence. The
  * others take an explicit arg or the topic the conversation is already on —
  * defaulting them too made every bare `Confront` an accusation about the leak,
  * which showed up as memories reading "I confronted Alice about the leaked
  * plan" when the player had said nothing of the kind.
  */
-const TOPIC_DEFAULTING: MoveId[] = ["AskAbout", "SpreadRumor"];
+const TOPIC_DEFAULTING: MoveId[] = ["Ask", "SpreadRumor"];
 
-function topicOf(world: WorldState, move: Move, conversation: Conversation | null): TopicId | undefined {
+function topicOf(world: WorldState, move: Move, conversation: Thread | null): TopicId | undefined {
   const named = move.args?.topicId as TopicId | undefined;
   if (named && world.topics[named]) return named;
   if (conversation?.topicId) return conversation.topicId;
@@ -734,7 +735,7 @@ function topicOf(world: WorldState, move: Move, conversation: Conversation | nul
 }
 
 /**
- * "Talk or hear about the thing." `AskAbout` is the only route by which a fact
+ * "Talk or hear about the thing." `Ask` is the only route by which a fact
  * moves between two people, and it is gated on trust — which is what makes the
  * relationship numbers load-bearing for the mystery rather than decorative.
  */
@@ -802,7 +803,7 @@ function resolveTopical(
   makeAware(world, move.actor, topicId);
   makeAware(world, move.target, topicId);
 
-  if (move.id === "AskAbout") {
+  if (move.id === "Ask") {
     if (!willShare(world, move.target, move.actor)) return;
     const evidence = shareableEvidence(world, move.target, move.actor, topicId);
     if (!evidence) return;
@@ -926,7 +927,7 @@ function resolveMove(
   // selection, so this catches stale player intent after an NPC walked out.
   if (move.target && !coLocated(world, move.actor, move.target)) return;
 
-  let conversation: Conversation | null = null;
+  let conversation: Thread | null = null;
   if (move.target && move.id !== "GoTo") {
     conversation = openOrJoin(world, move.actor, move.target);
   }
@@ -947,7 +948,7 @@ function resolveMove(
   const ctx: MemoryContext = {
     turn,
     heat: Math.max(heatBefore, heatAfter),
-    conversationId: conversation?.id,
+    threadId: conversation?.id,
     topicId,
   };
 
@@ -956,7 +957,7 @@ function resolveMove(
     world.characters[move.actor]?.location === here ||
     (Boolean(move.target) && world.characters[move.target as string]?.location === here);
 
-  s.log.push({ move, witnessedByPlayer, conversationId: conversation?.id });
+  s.log.push({ move, witnessedByPlayer, threadId: conversation?.id });
 
   if (witnessedByPlayer) {
     s.utterances.push({
@@ -1012,7 +1013,7 @@ function resolveMove(
 function resolveFight(
   world: WorldState,
   move: Move,
-  conversation: Conversation,
+  conversation: Thread,
   playerId: CharacterId,
   turn: number,
   s: TickScratch,
@@ -1073,7 +1074,7 @@ function nightPass(
   const events: SimEvent[] = [];
   const turn = world.turn;
 
-  for (const conversation of Object.values(world.conversations)) {
+  for (const conversation of Object.values(world.threads)) {
     if (conversation.status === "open") closeConversation(world, conversation);
   }
 
@@ -1119,7 +1120,7 @@ function nightPass(
     }
   }
 
-  for (const conversation of Object.values(world.conversations)) {
+  for (const conversation of Object.values(world.threads)) {
     if (conversation.status === "open") closeConversation(world, conversation);
   }
 
@@ -1173,7 +1174,7 @@ export function normalizeWorld(world: WorldState): WorldState {
   if (typeof w.slot !== "number") w.slot = 0;
   if (!w.locations) w.locations = {};
   if (!w.topics) w.topics = {};
-  if (!w.conversations) w.conversations = {};
+  if (!w.threads) w.threads = {};
   if (!Array.isArray(w.pendingRequests)) w.pendingRequests = [];
   if (!w.phase) w.phase = "suspicion";
 
@@ -1205,18 +1206,18 @@ export function normalizeWorld(world: WorldState): WorldState {
       if (!belief.subject) belief.subject = character.id;
     }
     for (const rel of Object.values(character.relationships)) {
-      if (typeof rel.anger !== "number") rel.anger = 0;
+      // The boundary between the tolerant shape saves and fixtures are allowed
+      // to have (`RelationshipState`, axes optional) and the strict one the
+      // engine does arithmetic on. Every axis is a number from here on.
+      for (const axis of REL_FIELDS) {
+        if (typeof rel[axis] !== "number") rel[axis] = 0;
+      }
       if (!rel.flags) rel.flags = [];
       if (!rel.history) rel.history = [];
       if (!rel.lastDelta) rel.lastDelta = {};
-      if (!rel.baseline) {
-        rel.baseline = {
-          trust: rel.trust,
-          affection: rel.affection,
-          respect: rel.respect,
-          fear: rel.fear,
-          anger: rel.anger,
-        };
+      if (!rel.baseline) rel.baseline = {} as RelationshipValues;
+      for (const axis of REL_FIELDS) {
+        if (typeof rel.baseline[axis] !== "number") rel.baseline[axis] = rel[axis];
       }
     }
   }

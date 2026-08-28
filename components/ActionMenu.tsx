@@ -26,7 +26,7 @@ interface Props {
   selectedExit: string | null;
   onSelectExit: (id: string) => void;
 
-  /** What the player can ask about. Only read for `AskAbout`. */
+  /** What the player can ask about. Only read for `Ask`. */
   topics: Option[];
   selectedTopic: string | null;
   onSelectTopic: (id: string) => void;

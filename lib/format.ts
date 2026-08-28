@@ -1,12 +1,12 @@
 import type { Relationship, RelationshipField } from "./viewTypes";
+import { RELATIONSHIP_AXES } from "@sim/types";
 
-export const REL_FIELDS: RelationshipField[] = [
-  "trust",
-  "affection",
-  "respect",
-  "fear",
-  "anger",
-];
+/**
+ * Driven off the contract's own axis list, so adding an axis in
+ * `sim/src/types.ts` reaches decay, status derivation, the effect tables and
+ * the inspector bars without touching any of them.
+ */
+export const REL_FIELDS: RelationshipField[] = [...RELATIONSHIP_AXES];
 
 export function clamp(n: number): number {
   if (n < 0) return 0;
@@ -38,8 +38,13 @@ export function bucket(value: number): string {
  * relationship slid to `cold` and stayed there. Anger now carries the
  * hostility weight (it is the axis that spikes and fades), fear is weighted
  * once, and decay means both come back down.
+ *
+ * Extended to the merged eight-axis set: `gratitude` reads as warmth,
+ * `jealousy` and `hate` as threat. The thresholds are unchanged because the
+ * three new axes start at zero across the cast — they widen the range this
+ * score *can* reach without moving where it currently sits.
  */
-// Calibrated against the cast, not picked round: warmth runs 0..300, a real
+// Calibrated against the cast, not picked round: warmth runs 0..400, a real
 // friendship sits near 200 and a nodding acquaintance near 145. At 110 the
 // acquaintance read as `warm` and every fallback line was written for someone
 // they barely know.
@@ -50,9 +55,19 @@ export const TONE_HYSTERESIS = 8;
 
 export type ToneBucket = "cold" | "neutral" | "warm";
 
+/**
+ * Coalesced per axis on purpose. This function decides both what characters do
+ * (`respondTo`) and how they sound (every fallback line), and it is handed
+ * snapshots that have not always been through `normalizeWorld` — a saved game
+ * or a test fixture written before an axis existed. One `undefined` makes the
+ * whole sum `NaN`, every comparison below false, and the entire cast quietly
+ * neutral. Missing means zero.
+ */
 export function toneScore(rel: Relationship): number {
-  const warmth = rel.trust + rel.affection + rel.respect;
-  const threat = rel.fear + rel.anger * 1.5;
+  const v = (axis: RelationshipField): number => rel[axis] ?? 0;
+  const warmth = v("trust") + v("affection") + v("respect") + v("gratitude");
+  const threat =
+    v("fear") + v("anger") * 1.5 + v("jealousy") + v("hate") * 1.5;
   return warmth - threat;
 }
 

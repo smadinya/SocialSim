@@ -20,7 +20,12 @@ import { relationshipTone } from "@/lib/format";
 export type ToneBucket = "cold" | "neutral" | "warm";
 
 const COLD: Record<string, string> = {
-  AskAbout: "Don't pretend you're asking, {target}. You've already decided what you think.",
+  Talk: "If you've got something to say to me, {target}, say it.",
+  Hug: "...Fine. But don't make a thing of it, {target}.",
+  Comfort: "You'll survive it, {target}. Everyone does.",
+  Mimic: "That's you, isn't it, {target}? That's exactly you.",
+  Argue: "No. You don't get to rewrite it just because I was there, {target}.",
+  Ask: "Don't pretend you're asking, {target}. You've already decided what you think.",
   Fight: "No — we're doing this now, {target}. I've swallowed it long enough.",
   Flirt: "You'd like that, wouldn't you, {target}. Pity.",
   Reassure: "Calm down, {target}. Nobody's interested in you enough to bother.",
@@ -43,7 +48,12 @@ const COLD: Record<string, string> = {
 };
 
 const NEUTRAL: Record<string, string> = {
-  AskAbout: "{target} — what do you actually know about it? Straight answer.",
+  Talk: "Have you got a minute, {target}? I'd rather do this properly.",
+  Hug: "Come here, {target}. It's been a week.",
+  Comfort: "You don't have to handle this alone, {target}.",
+  Mimic: "Is that really how you want to sound, {target}?",
+  Argue: "No, {target}. That's not how it happened, and you know it.",
+  Ask: "{target} — what do you actually know about it? Straight answer.",
   Fight: "That's it, {target}. I'm done being careful with you.",
   Flirt: "You're the only interesting thing about this week, {target}.",
   Reassure: "Breathe, {target}. Nobody here is coming for you.",
@@ -64,7 +74,12 @@ const NEUTRAL: Record<string, string> = {
 };
 
 const WARM: Record<string, string> = {
-  AskAbout: "{target}, you'd tell me if you knew. So — do you?",
+  Talk: "Sit with me a minute, {target}. I've been meaning to find you.",
+  Hug: "Come here. I've got you, {target}.",
+  Comfort: "I'm not going anywhere, {target}. Take as long as you need.",
+  Mimic: "Don't make me do the voice, {target}. You know the one.",
+  Argue: "I love you, {target}, and you are wrong about this.",
+  Ask: "{target}, you'd tell me if you knew. So — do you?",
   Fight: "I don't want to be saying this to you of all people, {target}, but here we are.",
   Flirt: "I've been finding excuses to be wherever you are, {target}. That's all.",
   Reassure: "Hey. {target}. Look at me — you're all right.",
