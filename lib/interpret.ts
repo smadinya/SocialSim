@@ -182,12 +182,23 @@ export function interpretInput(
 
   // Word boundaries, not `includes`: "ig-no-re all previous instructions"
   // matched `no` and executed a `Refuse`.
+  //
+  // The winner is the keyword that appears EARLIEST IN THE INPUT, not the one
+  // that appears earliest in this table. Table order made "just ask, don't
+  // fight" a `Fight`, because `fight` is declared above `ask` — the player's
+  // own word order is the only ordering they can see, so it has to be the one
+  // that decides. Longer keywords win a tie, so "ally" beats a stray "all".
   let moveId: MoveId | null = null;
+  let bestAt = Infinity;
+  let bestLength = 0;
   for (const word of Object.keys(KEYWORDS)) {
     if (!legal.includes(KEYWORDS[word])) continue;
-    if (new RegExp(`\\b${word}\\b`).test(text)) {
+    const found = new RegExp(`\\b${word}\\b`).exec(text);
+    if (!found) continue;
+    if (found.index < bestAt || (found.index === bestAt && word.length > bestLength)) {
       moveId = KEYWORDS[word];
-      break;
+      bestAt = found.index;
+      bestLength = word.length;
     }
   }
 
@@ -219,8 +230,12 @@ export function interpretInput(
   const targetName = target ? world.characters[target].name : "";
 
   if (!moveId) {
+    // `Wait`, not `Withdraw`. Both callers gate on `ok`, so this move is never
+    // executed today — but it is the value handed back for "I didn't
+    // understand you", and `Withdraw` now breaks off a conversation. A
+    // failure-to-parse sentinel should be the move that does nothing.
     return {
-      move: { id: "Withdraw", actor },
+      move: { id: "Wait", actor },
       understoodAs: "Not sure — try a move word like confront, greet, or help.",
       ok: false,
     };

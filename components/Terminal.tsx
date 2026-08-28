@@ -98,8 +98,14 @@ export default function Terminal({ fixture }: Props) {
     return canFight(w, playerId, selectedTarget, conversation?.heat ?? 0);
   }, [w, playerId, selectedTarget]);
 
+  // Also re-point when the current pick walks out. Guarding only on `null`
+  // left the selection on someone who was no longer in the room: no chip
+  // rendered as active, but Enter still committed at them and came back
+  // "Alice isn't here."
   useEffect(() => {
-    if (selectedTarget === null && targets.length > 0) setSelectedTarget(targets[0].id);
+    if (targets.length === 0) return;
+    if (selectedTarget && targets.some((t) => t.id === selectedTarget)) return;
+    setSelectedTarget(targets[0].id);
   }, [selectedTarget, targets]);
   useEffect(() => {
     if (selectedExit === null && exits.length > 0) setSelectedExit(exits[0].id);

@@ -2,7 +2,7 @@
 
 import type { CharacterId, WorldState } from "@/lib/viewTypes";
 import { REL_FIELDS } from "@/lib/format";
-import { STATUS_BLURB, currentStatus } from "@/lib/relationships";
+import { currentStatus } from "@/lib/relationships";
 import TrustBar from "./TrustBar";
 
 interface Props {

@@ -46,7 +46,9 @@ import {
   close,
   closeConversation,
   conversationFor,
+  lastBeatBy,
   openOrJoin,
+  recentlyClosed,
   settle,
 } from "./conversations";
 import {
@@ -233,13 +235,46 @@ function respondTo(
   const cold = rel ? relationshipTone(rel) === "cold" : false;
   let id = cold ? pair.cold : pair.warm;
 
+  // Don't promise a secret you haven't got. `RevealSecret` writes its line in
+  // `resolveMove` and only *then* discovers, inside `resolveTopical`, that
+  // there is nothing left to hand over — so Alice answered thirty consecutive
+  // questions with "There's something you should know, Robin" and transferred
+  // a fact exactly once. Someone with nothing more to give says so.
+  if (id === "RevealSecret") {
+    const topicId = topicFor(world, move);
+    const has =
+      topicId && shareableEvidence(world, responder, move.actor, topicId);
+    if (!has) id = "Refuse";
+  }
+
   if (heatState(heat) === "breaking" && (id === "Insult" || id === "Refuse")) {
     id = "Fight";
+  }
+
+  // The same no-repeats rule `legalTendencies` applies to autonomous moves.
+  // `RESPONSES` is a pure function of the incoming move and the tone, so two
+  // NPCs locked in a stable pair answered each other with the identical
+  // sentence indefinitely — Bob proposing and Calum saying "Fine, Bob. We'll
+  // do it your way" on every tick until the thread aged out. Saying nothing is
+  // a better beat than saying it twice, and lets `IDLE_TURNS` close the thread.
+  const said = lastBeatBy(world, responder);
+  if (
+    said &&
+    said.turn >= world.turn - 1 &&
+    said.moveId === id &&
+    said.target === move.actor
+  ) {
+    return null;
   }
 
   const reply: Move = { id, actor: responder, target: move.actor };
   if (move.args?.topicId) reply.args = { topicId: move.args.topicId };
   return reply;
+}
+
+/** The topic a move carries, before `resolveMove` has opened its thread. */
+function topicFor(world: WorldState, move: Move): TopicId | undefined {
+  return topicOf(world, move, conversationFor(world, move.actor));
 }
 
 function pickTendency(list: Tendency[], roll: number): Tendency | null {
@@ -273,9 +308,25 @@ function legalTendencies(
     ? conversation.participants.find((p) => p !== actor)
     : undefined;
 
+  // Nobody says the same sentence twice in a row. A tendency table plus a
+  // weighted roll is a stationary process: Calum greeted Dana with the same
+  // words on four consecutive ticks and Dana confronted Bob on five, because
+  // nothing in the loop could see what the actor had just done. Excluding the
+  // actor's own last beat costs one lookup and is the difference between a
+  // conversation and a stuck record.
+  const previous = lastBeatBy(world, actor);
+  const justSaid = (t: Tendency) =>
+    Boolean(
+      previous &&
+        previous.turn >= world.turn - 1 &&
+        previous.moveId === t.moveId &&
+        previous.target === t.target,
+    );
+
   return (TENDENCIES[actor] ?? []).filter((t) => {
     if (t.target === actor) return false;
     if (!coLocated(world, actor, t.target)) return false;
+    if (justSaid(t)) return false;
     if (engagedWith) return t.target === engagedWith;
 
     // The rule has to hold from BOTH ends. Enforcing it only on the actor let
@@ -283,7 +334,10 @@ function legalTendencies(
     // — which closed that thread and reset its heat, so an argument could
     // never survive a bystander saying hello.
     const theirs = conversationFor(world, t.target);
-    return !theirs || theirs.participants.includes(actor);
+    if (theirs && !theirs.participants.includes(actor)) return false;
+
+    // A thread that just hit its ceiling does not restart on the next tick.
+    return !recentlyClosed(world, actor, t.target, world.turn);
   });
 }
 
@@ -706,6 +760,15 @@ function overhear(
     if (speakers.includes(id)) continue;
     if (world.characters[id].location !== where) continue;
     if (evidence.heldBy.includes(id)) continue;
+    // You cannot learn a fact about yourself from a conversation you are not
+    // in. See `shareableEvidence` — the same rule, the other route in.
+    if (evidence.pointsAt === id) continue;
+    // Someone mid-conversation of their own is not listening to yours. Without
+    // this the room was a public address system: one question put to Alice on
+    // the opening turn handed her keystone secret to Bob, Calum and Dana at
+    // once, and by the endgame all five held all six pieces — which is the
+    // scenario's central asymmetry deleted.
+    if (conversationFor(world, id)) continue;
 
     evidence.heldBy.push(id);
     const character = world.characters[id];
@@ -804,10 +867,22 @@ function resolveTopical(
   }
 
   // A rumor plants something that is not true. Whoever hears it cannot tell.
+  //
+  // `args.subject` is who the player said the rumor was about. It used to be
+  // written by both interpreters and read by neither, so "spread a rumor to
+  // Alice about Bob" planted the first lie in the table — which is about
+  // Calum. Saying one thing and doing another is worse than not supporting it.
   if (move.id === "SpreadRumor") {
-    const planted = topic.evidence.find(
-      (e) => !e.accurate && !e.heldBy.includes(move.target as CharacterId),
+    const listener = move.target as CharacterId;
+    const subject = move.args?.subject as CharacterId | undefined;
+    const pool = topic.evidence.filter(
+      (e) => !e.accurate && e.pointsAt !== listener && !e.heldBy.includes(listener),
     );
+    // Naming a subject means that subject: if there is no story to tell about
+    // them, none is told. Only an unaimed rumor takes whatever is to hand.
+    const planted = subject
+      ? pool.find((e) => e.pointsAt === subject)
+      : pool[0];
     if (!planted) return;
     planted.locked = false;
     giveEvidence(planted, move.target);
@@ -887,7 +962,11 @@ function resolveMove(
     s.utterances.push({
       speaker: move.actor,
       moveId: move.id,
-      line: stubDialogue(move.id, nameOf(world, move.target)),
+      line: stubDialogue(
+        move.id,
+        nameOf(world, move.target),
+        nameOf(world, move.args?.subject as CharacterId | undefined) || undefined,
+      ),
     });
     for (const observer of world.scene.presentCharacters) {
       writeMemory(world, observer, move, ctx);
@@ -922,7 +1001,7 @@ function resolveMove(
   }
 
   if (move.id === "Fight" && conversation) {
-    resolveFight(world, move, conversation, turn, s);
+    resolveFight(world, move, conversation, playerId, turn, s);
   }
 }
 
@@ -934,6 +1013,7 @@ function resolveFight(
   world: WorldState,
   move: Move,
   conversation: Conversation,
+  playerId: CharacterId,
   turn: number,
   s: TickScratch,
 ): void {
@@ -956,10 +1036,18 @@ function resolveFight(
 
   closeConversation(world, conversation);
 
-  // The one who didn't start it leaves. The player never gets walked out of
-  // their own scene — there is no rule that would bring them back.
-  const loser = move.target;
-  if (!loser) return;
+  // The one who didn't start it leaves — unless that is the player, in which
+  // case the one who DID start it leaves instead.
+  //
+  // The comment here used to assert the player is never walked out and the
+  // code did not check. `loser = move.target` was unconditional, so an NPC
+  // escalating to `Fight` teleported the player out of the room they had
+  // chosen to stand in, and the feed reported it as "Robin walks out." — the
+  // player's own character described in the third person, doing something the
+  // player never asked for. A fight still empties the room of one of them; it
+  // is now always the one whose exit the game is allowed to author.
+  const loser = move.target === playerId ? move.actor : move.target;
+  if (!loser || loser === playerId) return;
   const from = world.characters[loser]?.location;
   const exits = from ? world.locations[from]?.connectsTo ?? [] : [];
   if (!from || exits.length === 0) return;
@@ -1173,6 +1261,16 @@ function blockedBecause(
       return `It hasn't come to that with ${target.name}. Not yet.`;
     }
   }
+  // Same reason `respondTo` no longer answers with a secret it hasn't got:
+  // the line is written before `resolveTopical` discovers there is nothing to
+  // hand over, so the move reads as a revelation and transfers nothing. Better
+  // to say so and keep the move.
+  if (move.id === "RevealSecret") {
+    const topicId = topicFor(world, move);
+    if (!topicId || !shareableEvidence(world, playerId, move.target, topicId)) {
+      return `There's nothing you can tell ${target.name} that they don't already know.`;
+    }
+  }
   return null;
 }
 
@@ -1306,27 +1404,45 @@ export function runTick(
 
   // Appended after the shuffle rather than mixed into it: a reply that
   // resolves before the thing it replies to is worse than no reply.
-  if (candidates.includes(playerMove)) {
-    const conversation = playerMove.target
-      ? between(next, playerId, playerMove.target)
+  //
+  // Every move gets a reply, not just the player's. When only the player's did,
+  // an NPC addressed by another NPC had no route to a beat at all: `respondTo`
+  // was never called for them, and `legalTendencies` confines an engaged
+  // character to tendencies aimed at their partner — which for most pairs is
+  // the empty set. Bob proposed an alliance to Calum a hundred and nineteen
+  // times across eight runs and Calum never once answered. The player is the
+  // exception in the other direction: a move aimed AT them gets no automatic
+  // reply, because answering is the thing they are here to do.
+  const replies: Move[] = [];
+  for (const move of order) {
+    if (move.target === playerId) continue;
+    const conversation = move.target
+      ? between(next, move.actor, move.target)
       : null;
     const reply = respondTo(
       next,
-      playerMove,
-      order.map((m) => m.actor),
+      move,
+      [...order.map((m) => m.actor), ...replies.map((r) => r.actor)],
       conversation?.heat ?? 0,
     );
-    if (reply) order.push(reply);
+    if (reply) replies.push(reply);
   }
+  order.push(...replies);
 
   for (const move of order) {
     resolveMove(next, move, playerId, nextTurn, s);
   }
 
-  // NPC `Withdraw` is the departure half of the presence rule. The player
-  // never leaves this way — `GoTo` is how they move, and it is deliberate.
+  // `Withdraw` is the departure half of the presence rule. Breaking off the
+  // conversation is the part everyone does, including the player: for them it
+  // used to do nothing whatsoever — no relocation (correct, `GoTo` is how they
+  // move) but also no disengagement, so the menu offered "step back from the
+  // scene" and the player stayed in the room, in the same thread, one move
+  // poorer. Walking out afterwards is still NPCs only.
   for (const move of order) {
-    if (move.id !== "Withdraw" || move.actor === playerId) continue;
+    if (move.id !== "Withdraw") continue;
+    close(next, move.actor);
+    if (move.actor === playerId) continue;
     const from = next.characters[move.actor]?.location;
     const exits = from ? next.locations[from]?.connectsTo ?? [] : [];
     if (!from || exits.length === 0) continue;
@@ -1363,13 +1479,16 @@ export function runTick(
   deriveScene(next, playerId);
 
   for (const change of recordStatusChanges(next, statusesBefore, nextTurn)) {
+    const better = improved(change.was, change.now);
     writeCoreMemory(
       next,
       change.from,
       nextTurn,
-      `${nameOf(next, change.to)} is not who I thought they were.`,
+      better
+        ? `${nameOf(next, change.to)} has turned out to be someone I can lean on.`
+        : `${nameOf(next, change.to)} is not who I thought they were.`,
       ["status", change.now, change.to],
-      change.now === "friend" || change.now === "close" ? 0.5 : -0.5,
+      better ? 0.5 : -0.5,
     );
     s.events.push({
       id: `event-${nextTurn}-status-${change.from}-${change.to}`,
@@ -1377,7 +1496,7 @@ export function runTick(
       type: "status",
       actor: change.from,
       target: change.to,
-      description: `${nameOf(next, change.from)} ${statusBlurb(change.now)} ${nameOf(next, change.to)}.`,
+      description: `${nameOf(next, change.from)} ${statusBlurb(change.now, better)} ${nameOf(next, change.to)}.`,
       OnScene: [change.from, change.to],
     });
   }
@@ -1403,11 +1522,34 @@ export function runTick(
 }
 
 /**
+ * Statuses ranked worst to best, so a crossing knows which way it went.
+ *
+ * Status alone cannot say that: `wary` is a collapse from `friend` and a
+ * recovery from `estranged`, and the feed announced both as "has grown wary
+ * of". A player watching a relationship climb back out of a fight was told,
+ * line by line, that it was still falling apart.
+ */
+const STATUS_ORDER = [
+  "hostile",
+  "estranged",
+  "rival",
+  "wary",
+  "neutral",
+  "friend",
+  "ally",
+  "close",
+];
+
+function improved(was: string, now: string): boolean {
+  return STATUS_ORDER.indexOf(now) > STATUS_ORDER.indexOf(was);
+}
+
+/**
  * Every blurb has to end in a preposition, because the name is appended after
  * it. "now treats as a rival" read as "Robin now treats as a rival Alice."
  */
-function statusBlurb(status: string): string {
-  const blurbs: Record<string, string> = {
+function statusBlurb(status: string, better = false): string {
+  const worsening: Record<string, string> = {
     close: "is close with",
     friend: "counts a friend in",
     ally: "is working with",
@@ -1417,7 +1559,15 @@ function statusBlurb(status: string): string {
     estranged: "is done with",
     hostile: "is furious with",
   };
-  return blurbs[status] || "now sees something different in";
+  // Only the statuses that read backwards on the way up need a second form.
+  const improving: Record<string, string> = {
+    neutral: "has come round to",
+    wary: "is thawing, a little, toward",
+    estranged: "has stopped fighting with",
+    rival: "has stepped back from open war with",
+  };
+  const blurb = (better ? improving[status] : undefined) ?? worsening[status];
+  return blurb || "now sees something different in";
 }
 
 /** The investigator. The arc is hers; the player is leaning on it. */

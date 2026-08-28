@@ -6,6 +6,8 @@ import type {
   WorldState,
 } from "./viewTypes";
 
+import { bandFor } from "./clock";
+
 /**
  * Topics are what the world is *about*.
  *
@@ -61,7 +63,14 @@ export function willShare(
 
 /**
  * What `holder` can pass to `asker` about this topic: something they hold,
- * that isn't locked, that the asker doesn't already have.
+ * that isn't locked, that the asker doesn't already have, and that isn't
+ * about the asker.
+ *
+ * That last clause is not squeamishness. Without it the engine emitted
+ * "Calum learns: Calum was seen talking with the rival that week" — a
+ * character being informed of his own whereabouts, which he is the one person
+ * in the world who cannot be told. It also fed `suspicionOf` a self-pointing
+ * weight, so a framed character accumulated evidence against himself.
  */
 export function shareableEvidence(
   world: WorldState,
@@ -73,7 +82,11 @@ export function shareableEvidence(
   if (!topic) return null;
   return (
     topic.evidence.find(
-      (e) => !e.locked && e.heldBy.includes(holder) && !e.heldBy.includes(asker),
+      (e) =>
+        !e.locked &&
+        e.pointsAt !== asker &&
+        e.heldBy.includes(holder) &&
+        !e.heldBy.includes(asker),
     ) ?? null
   );
 }
@@ -159,9 +172,18 @@ export function phaseFor(
   if (world.phase === "resolved") return "resolved";
 
   const held = evidenceHeldBy(world, investigator, LEAK_TOPIC).length;
-  const deadline = world.day > RECKONING_DAY;
 
-  if (deadline) return "reckoning";
+  // The reckoning has to be a phase you can PLAY, not a label the resolver
+  // passes through on its way to an ending. It used to open on
+  // `day > RECKONING_DAY` — the identical condition `advancePhase` resolves
+  // on — so "she wants an answer today" and the ending fired in the same
+  // tick, on a day 5 that holds no moves. It now opens on the evening of the
+  // deadline day, which leaves the player the last eight moves to change her
+  // mind.
+  if (world.day > RECKONING_DAY) return "reckoning";
+  if (world.day === RECKONING_DAY && bandFor(world.slot) === "evening") {
+    return "reckoning";
+  }
   // A passive player still gets moved along: the investigation opens on the
   // first evidence transfer OR at the top of the deadline day, whichever
   // comes first.

@@ -1,6 +1,7 @@
 import type {
   CharacterId,
   Conversation,
+  ConversationBeat,
   ConversationId,
   Move,
   MoveId,
@@ -91,7 +92,19 @@ export function openOrJoin(
   close(world, actor);
   close(world, target);
 
-  const id: ConversationId = `conv-${world.turn}-${pairKey(actor, target)}`;
+  // The id has to be unique, not merely descriptive. It used to be
+  // `conv-<turn>-<pair>`, and the same pair can open a second thread inside a
+  // single turn: Dana confronts Bob, Alice pulls Dana away, Bob turns back to
+  // Dana — three moves, one tick. The third `openOrJoin` computed the id the
+  // first one had and overwrote the record in place, so the confrontation's
+  // beats and heat vanished from a world that still held a `ConversationId`
+  // pointing at them. Anything reading history back — the no-repeats rule, the
+  // reopen cooldown, `beatLines` for a prompt — was reading a thread the
+  // engine had quietly deleted.
+  const base = `conv-${world.turn}-${pairKey(actor, target)}`;
+  let id: ConversationId = base;
+  for (let n = 2; world.conversations[id]; n++) id = `${base}-${n}`;
+
   const conversation: Conversation = {
     id,
     participants: [actor, target],
@@ -132,6 +145,67 @@ export function advance(
   }
 
   return conversation.heat;
+}
+
+/**
+ * How long a pair stays apart after their thread hit `MAX_TURNS`.
+ *
+ * `MAX_TURNS` on its own bought nothing: the cap closed the conversation and
+ * the same two reopened it on the very next tick, so the only thing it reset
+ * was heat and the beat list. Alice and Robin ran that loop for thirty-five
+ * consecutive turns. The cooldown gates *autonomous* selection only — the
+ * player may always address whoever they like.
+ */
+export const REOPEN_COOLDOWN = 3;
+
+export function recentlyClosed(
+  world: WorldState,
+  a: CharacterId,
+  b: CharacterId,
+  turn: number,
+): boolean {
+  const key = pairKey(a, b);
+  return Object.values(world.conversations).some(
+    (c) =>
+      c.status === "closed" &&
+      pairKey(c.participants[0], c.participants[1]) === key &&
+      turn - c.lastTurn < REOPEN_COOLDOWN,
+  );
+}
+
+/**
+ * The last thing this actor did, in whichever thread they did it.
+ *
+ * Deliberately not scoped to their current conversation. Threads churn —
+ * `openOrJoin` closes and reopens one every time somebody turns to a third
+ * person — so a beat list is a few turns of memory at best, and "have I just
+ * said this?" kept being answered by an empty array. Dana defended Alice on
+ * two consecutive turns either side of a thread boundary with the same
+ * sentence both times.
+ *
+ * `ConversationBeat` carries no target, so it comes from the pair: a
+ * conversation has exactly two participants and one of them is the actor.
+ */
+export interface LastBeat {
+  moveId: MoveId;
+  target?: CharacterId;
+  turn: number;
+}
+
+export function lastBeatBy(
+  world: WorldState,
+  actor: CharacterId,
+): LastBeat | undefined {
+  let best: LastBeat | undefined;
+  for (const conversation of Object.values(world.conversations)) {
+    const other = conversation.participants.find((p) => p !== actor);
+    for (const beat of conversation.beats) {
+      if (beat.actor !== actor) continue;
+      if (best && beat.turn <= best.turn) continue;
+      best = { moveId: beat.moveId, target: other, turn: beat.turn };
+    }
+  }
+  return best;
 }
 
 export function close(world: WorldState, id: CharacterId): void {

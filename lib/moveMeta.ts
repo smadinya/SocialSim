@@ -43,7 +43,7 @@ export const MOVE_META: Record<string, MoveMeta> = {
 
   // --- Move ---------------------------------------------------------------
   GoTo: { id: "GoTo", label: "Go to", needsTarget: false, row: "Move", blurb: "Walk somewhere else." },
-  Withdraw: { id: "Withdraw", label: "Withdraw", needsTarget: false, row: "Move", blurb: "Step back from the scene." },
+  Withdraw: { id: "Withdraw", label: "Withdraw", needsTarget: false, row: "Move", blurb: "Break off the conversation you're in." },
   Wait: { id: "Wait", label: "Wait", needsTarget: false, row: "Move", blurb: "Let the moment pass." },
 };
 
@@ -309,14 +309,24 @@ export function canFight(
   return Boolean(rel && rel.anger >= FIGHT_ANGER_AT);
 }
 
+/**
+ * `{target}` is who is being ADDRESSED. `{subject}` is the third party a
+ * three-party move is about, and reads as "them" when nobody was named.
+ *
+ * Conflating the two is not a wording nit: `SpreadRumor` and `Defend` both
+ * substituted the listener into the subject slot, so Bob told Robin "Robin has
+ * been talking" and Dana told Alice "leave Alice out of this". The bucketed
+ * table in `ai/fallbacks.ts` already draws this distinction — these are the
+ * lines the player reads with the server off, and they have to agree with it.
+ */
 const DIALOGUE_TEMPLATES: Record<string, string> = {
   Greet: "Good to see you, {target}. It's been a strange few days.",
   AskAbout: "{target} — what do you actually know about it?",
   Confront: "Don't play dumb, {target}. I know what you did.",
   GiveGift: "Here, {target}. I wanted you to have this.",
-  SpreadRumor: "You didn't hear it from me, but {target} has been talking.",
-  RevealSecret: "There's something you should know, {target}.",
-  Defend: "Leave {target} out of this — they've done nothing wrong.",
+  SpreadRumor: "You didn't hear it from me, {target}, but there's been talk about {subject}.",
+  RevealSecret: "There's something you should know, {target}. It's about {subject}.",
+  Defend: "Leave {subject} out of this, {target} — they've done nothing wrong.",
   Insult: "Honestly, {target}, I expected better and got less.",
   Apologize: "I'm sorry, {target}. I should have handled that differently.",
   Reassure: "Breathe, {target}. Nobody here is coming for you.",
@@ -333,7 +343,10 @@ const DIALOGUE_TEMPLATES: Record<string, string> = {
 export function stubDialogue(
   moveId: MoveId,
   targetName?: string,
+  subjectName?: string,
 ): string {
   const template = DIALOGUE_TEMPLATES[moveId] || "{target}...";
-  return template.replace("{target}", targetName || "everyone");
+  return template
+    .replace("{target}", targetName || "everyone")
+    .replace("{subject}", subjectName || "them");
 }
