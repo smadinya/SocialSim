@@ -1,11 +1,18 @@
 import { describe, expect, it } from "vitest";
-import type { Move, WorldState } from "@ai/types";
-import { dominantAxis, retrieve, scoreMemory } from "@ai/retrieval";
-import { toMemory, toPendingUtterance } from "@ai/adapt";
+import type { Move, WorldState } from "@sim/types";
+import {
+  dominantAxis,
+  effectiveImportance,
+  retrieve,
+  scoreMemory,
+} from "@ai/retrieval";
+import { toPendingUtterance } from "@ai/adapt";
 import deep from "./fixtures/deep-world.json";
 
 const world = deep as unknown as WorldState;
-const memoriesOf = (id: string) => world.characters[id].memories.map(toMemory);
+// `sim/src/types.ts` carries valence/tier/accurate/core since update 1, so
+// these are read straight off the world — `ai/adapt.ts` used to default them.
+const memoriesOf = (id: string) => world.characters[id].memories;
 
 describe("retrieval", () => {
   it("has a pool the top-5 cut actually binds against", () => {
@@ -70,50 +77,53 @@ describe("retrieval", () => {
   });
 
   it("derives a move's dominant axis from the effect table", () => {
-    expect(dominantAxis("Confront")).toBe("fear");
+    // `anger` overtook `fear` on Confront when the fifth axis landed (+10 vs
+    // +8), and that is the right read: being confronted makes you angrier
+    // than it makes you frightened.
+    expect(dominantAxis("Confront")).toBe("anger");
+    expect(dominantAxis("Insult")).toBe("anger");
     expect(dominantAxis("GiveGift")).toBe("affection");
     expect(dominantAxis("Withdraw")).toBeNull();
   });
 
-  // The test everybody quotes. It guards the half the data layout already
-  // makes true — see prompts.test.ts for the one that would actually catch me.
-  it("Calum-absent: Calum never retrieves the betrayal he missed", () => {
-    for (const target of ["bob", "alice", "dana", "you"]) {
-      for (const id of ["Confront", "Greet", "SpreadRumor", "AskForHelp"]) {
-        const got = retrieve(
-          memoriesOf("calum"),
-          { id, actor: "calum", target },
-          "calum",
-          world.turn,
-        );
-        for (const m of got) {
-          expect(m.tags).not.toContain("betrayal");
-          expect(m.description.toLowerCase()).not.toMatch(/leak|betray/);
-        }
-      }
+  // `ai/types.ts` is deleted and `ai/adapt.ts` defaults nothing: every field
+  // below is read straight off the world. This used to assert the opposite —
+  // that the shim invented `valence`/`tier`/`accurate` because the schema
+  // didn't carry them yet.
+  it("reads the real memory fields rather than defaulting them", () => {
+    const marked = structuredClone(world) as WorldState;
+    for (const m of marked.characters.alice.memories) {
+      m.valence = -0.75;
+      m.tier = "told";
+      m.accurate = false;
     }
-  });
 
-  it("the adapter defaults the fields G0 hasn't landed yet", () => {
-    const bare = structuredClone(world);
-    for (const c of Object.values(bare.characters)) {
-      c.memories = c.memories.map((m) => {
-        const copy = { ...m } as Record<string, unknown>;
-        delete copy.valence;
-        delete copy.tier;
-        delete copy.accurate;
-        return copy as (typeof c.memories)[number];
-      });
-    }
-    const u = toPendingUtterance(bare, {
+    const u = toPendingUtterance(marked, {
       move: { id: "Confront", actor: "alice", target: "bob" },
       witnessedByPlayer: true,
     });
+
     expect(u.retrievedMemories.length).toBe(5);
     for (const m of u.retrievedMemories) {
-      expect(m.valence).toBe(0);
-      expect(m.tier).toBe("direct");
-      expect(m.accurate).toBe(true);
+      expect(m.valence).toBe(-0.75);
+      expect(m.tier).toBe("told");
+      expect(m.accurate).toBe(false);
     }
+  });
+
+  it("floors decay on core memories so a betrayal stays reachable", () => {
+    const betrayal = memoriesOf("alice").find((m) => m.core);
+    expect(betrayal).toBeTruthy();
+
+    const ordinary = memoriesOf("alice").find((m) => !m.core);
+    expect(ordinary).toBeTruthy();
+
+    // Forty turns on, the core memory is still worth at least half what it
+    // was written at. Plain exponential decay put it below the filler.
+    const aged = effectiveImportance(betrayal!, 60);
+    expect(aged).toBeGreaterThanOrEqual(betrayal!.importance * 0.5);
+    expect(effectiveImportance(ordinary!, 60)).toBeLessThan(
+      ordinary!.importance * 0.5,
+    );
   });
 });

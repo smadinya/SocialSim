@@ -1,4 +1,4 @@
-import type { Memory, PendingUtterance, RelationshipAxis } from "@ai/types";
+import type { Memory, PendingUtterance, RelationshipAxis } from "@sim/types";
 import { REL_FIELDS } from "@/lib/format";
 
 /**
@@ -13,16 +13,21 @@ import { REL_FIELDS } from "@/lib/format";
  *    `PendingUtterance` — the speaker's own view. This function never takes a
  *    `WorldState`, so there is nothing here to reach into for "a bit more
  *    context" about a third party. `ai/__tests__/prompts.test.ts` asserts it.
+ * 3. A topic reaches the prompt as a LABEL and nothing else. `Evidence.claim`
+ *    is the one piece of shared ground truth in the world; a speaker who has
+ *    not been told a fact must not be able to say it, and the only way to
+ *    guarantee that is for the claims never to be in the prompt at all.
  */
 
 function axisLine(u: PendingUtterance): string {
   const rel = u.relationshipSnapshot;
   return REL_FIELDS.map((f) => {
     const axis: RelationshipAxis = f;
+    const value = rel[axis] ?? 0;
     const delta = rel.lastDelta[axis];
-    if (delta === undefined || delta === 0) return `${axis} ${rel[axis]}`;
+    if (delta === undefined || delta === 0) return `${axis} ${value}`;
     const dir = delta > 0 ? "up" : "down";
-    return `${axis} ${rel[axis]} (${dir} from ${rel[axis] - delta} this turn)`;
+    return `${axis} ${value} (${dir} from ${value - delta} this turn)`;
   }).join(", ");
 }
 
@@ -64,6 +69,20 @@ export function realizePrompt(u: PendingUtterance): string {
     "WHAT THEY ARE REMEMBERING RIGHT NOW:",
     memories,
     "",
+    ...(u.threadBeats.length
+      ? [
+          "THIS CONVERSATION SO FAR (oldest first):",
+          ...u.threadBeats.map((b) => `- ${b}`),
+          "",
+        ]
+      : []),
+    ...(u.topicLabel ? [`THEY ARE TALKING ABOUT: ${u.topicLabel}`] : []),
+    ...(u.heat >= 60
+      ? ["THIS IS AN ARGUMENT. It has already gone further than either meant it to."]
+      : u.heat >= 30
+        ? ["THE MOOD IS TENSE. Neither of them is relaxed."]
+        : []),
+    "",
     `THE MOVE: ${u.move.id}${target ? ` toward ${target}` : ""} (turn ${u.turn})`,
     ...(u.subjectName
       ? [`ABOUT: ${u.subjectName} — they are being talked about, not addressed.`]
@@ -74,6 +93,7 @@ export function realizePrompt(u: PendingUtterance): string {
     `- Only ${u.speakerName} speaks. Do not write anyone else's reply.`,
     "- Name only people mentioned above. Do not invent characters or events.",
     "- Let the relationship numbers and the deltas shape the tone, but never say a number.",
+    "- If a conversation is already in progress, continue it. Do not re-introduce yourself.",
     "",
     'Respond as JSON: {"line": "...", "deliveryNote": "a few words on delivery"}',
   ].join("\n");

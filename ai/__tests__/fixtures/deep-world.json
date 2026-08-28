@@ -1,10 +1,9 @@
 {
   "turn": 12,
-  "clock": "Day 3 — 16:40",
   "rngSeed": 20260822,
   "playerId": "you",
   "scene": {
-    "location": "Courtyard — West Wing",
+    "location": "courtyard",
     "presentCharacters": [
       "you",
       "alice",
@@ -37,10 +36,13 @@
             "trust": 51,
             "affection": 49,
             "respect": 53,
-            "fear": 7
+            "fear": 7,
+            "anger": 0
           },
           "lastDelta": {},
-          "flags": []
+          "flags": [],
+          "anger": 0,
+          "history": []
         },
         "bob": {
           "trust": 41,
@@ -51,10 +53,13 @@
             "trust": 41,
             "affection": 37,
             "respect": 44,
-            "fear": 13
+            "fear": 13,
+            "anger": 0
           },
           "lastDelta": {},
-          "flags": []
+          "flags": [],
+          "anger": 0,
+          "history": []
         },
         "calum": {
           "trust": 47,
@@ -65,10 +70,13 @@
             "trust": 47,
             "affection": 46,
             "respect": 49,
-            "fear": 6
+            "fear": 6,
+            "anger": 0
           },
           "lastDelta": {},
-          "flags": []
+          "flags": [],
+          "anger": 0,
+          "history": []
         },
         "dana": {
           "trust": 54,
@@ -79,10 +87,13 @@
             "trust": 54,
             "affection": 52,
             "respect": 56,
-            "fear": 4
+            "fear": 4,
+            "anger": 0
           },
           "lastDelta": {},
-          "flags": []
+          "flags": [],
+          "anger": 0,
+          "history": []
         }
       },
       "memories": [
@@ -100,7 +111,8 @@
           "valence": 0.2,
           "tier": "direct",
           "accurate": true,
-          "target": "you"
+          "target": "you",
+          "core": false
         },
         {
           "id": "mem-you-1",
@@ -116,7 +128,8 @@
           "valence": 0.0,
           "tier": "direct",
           "accurate": true,
-          "target": "calum"
+          "target": "calum",
+          "core": false
         },
         {
           "id": "mem-you-2",
@@ -132,7 +145,8 @@
           "valence": -0.2,
           "tier": "direct",
           "accurate": true,
-          "target": "you"
+          "target": "you",
+          "core": false
         },
         {
           "id": "mem-you-3",
@@ -148,7 +162,8 @@
           "valence": 0.1,
           "tier": "direct",
           "accurate": true,
-          "target": "you"
+          "target": "you",
+          "core": false
         },
         {
           "id": "mem-you-4",
@@ -164,7 +179,8 @@
           "valence": -0.1,
           "tier": "direct",
           "accurate": true,
-          "target": "you"
+          "target": "you",
+          "core": false
         },
         {
           "id": "mem-you-5",
@@ -180,7 +196,8 @@
           "valence": 0.6,
           "tier": "direct",
           "accurate": true,
-          "target": "alice"
+          "target": "alice",
+          "core": false
         },
         {
           "id": "mem-you-6",
@@ -196,7 +213,8 @@
           "valence": -0.1,
           "tier": "direct",
           "accurate": true,
-          "target": "you"
+          "target": "you",
+          "core": false
         },
         {
           "id": "mem-you-7",
@@ -212,7 +230,8 @@
           "valence": 0.0,
           "tier": "direct",
           "accurate": true,
-          "target": "bob"
+          "target": "bob",
+          "core": false
         },
         {
           "id": "mem-you-8",
@@ -226,7 +245,8 @@
           "importance": 0.4,
           "valence": -0.1,
           "tier": "direct",
-          "accurate": true
+          "accurate": true,
+          "core": false
         },
         {
           "id": "mem-you-9",
@@ -242,7 +262,8 @@
           "valence": 0.0,
           "tier": "direct",
           "accurate": true,
-          "target": "you"
+          "target": "you",
+          "core": false
         }
       ],
       "beliefs": [
@@ -256,7 +277,8 @@
       ],
       "goals": [
         "Figure out what really happened between Alice and Bob"
-      ]
+      ],
+      "location": "courtyard"
     },
     "alice": {
       "id": "alice",
@@ -282,10 +304,13 @@
             "trust": 58,
             "affection": 53,
             "respect": 47,
-            "fear": 9
+            "fear": 9,
+            "anger": 0
           },
           "lastDelta": {},
-          "flags": []
+          "flags": [],
+          "anger": 0,
+          "history": []
         },
         "bob": {
           "trust": 18,
@@ -296,12 +321,15 @@
             "trust": 18,
             "affection": 31,
             "respect": 36,
-            "fear": 21
+            "fear": 21,
+            "anger": 0
           },
           "lastDelta": {},
           "flags": [
             "betrayed"
-          ]
+          ],
+          "anger": 0,
+          "history": []
         },
         "calum": {
           "trust": 61,
@@ -312,10 +340,13 @@
             "trust": 61,
             "affection": 44,
             "respect": 51,
-            "fear": 8
+            "fear": 8,
+            "anger": 0
           },
           "lastDelta": {},
-          "flags": []
+          "flags": [],
+          "anger": 0,
+          "history": []
         },
         "dana": {
           "trust": 76,
@@ -326,10 +357,13 @@
             "trust": 76,
             "affection": 69,
             "respect": 63,
-            "fear": 3
+            "fear": 3,
+            "anger": 0
           },
           "lastDelta": {},
-          "flags": []
+          "flags": [],
+          "anger": 0,
+          "history": []
         }
       },
       "memories": [
@@ -347,7 +381,8 @@
           "valence": -0.9,
           "tier": "direct",
           "accurate": true,
-          "target": "alice"
+          "target": "alice",
+          "core": true
         },
         {
           "id": "mem-alice-1",
@@ -363,7 +398,8 @@
           "valence": 0.5,
           "tier": "direct",
           "accurate": true,
-          "target": "alice"
+          "target": "alice",
+          "core": false
         },
         {
           "id": "mem-alice-2",
@@ -378,7 +414,8 @@
           "valence": 0.2,
           "tier": "direct",
           "accurate": true,
-          "target": "alice"
+          "target": "alice",
+          "core": false
         },
         {
           "id": "mem-alice-3",
@@ -394,7 +431,8 @@
           "valence": -0.2,
           "tier": "direct",
           "accurate": true,
-          "target": "alice"
+          "target": "alice",
+          "core": false
         },
         {
           "id": "mem-alice-4",
@@ -410,7 +448,8 @@
           "valence": 0.6,
           "tier": "direct",
           "accurate": true,
-          "target": "alice"
+          "target": "alice",
+          "core": false
         },
         {
           "id": "mem-alice-5",
@@ -426,7 +465,8 @@
           "valence": 0.1,
           "tier": "direct",
           "accurate": true,
-          "target": "alice"
+          "target": "alice",
+          "core": false
         },
         {
           "id": "mem-alice-6",
@@ -442,7 +482,8 @@
           "valence": -0.6,
           "tier": "direct",
           "accurate": true,
-          "target": "bob"
+          "target": "bob",
+          "core": false
         },
         {
           "id": "mem-alice-7",
@@ -456,7 +497,8 @@
           "importance": 0.3,
           "valence": -0.1,
           "tier": "direct",
-          "accurate": true
+          "accurate": true,
+          "core": false
         },
         {
           "id": "mem-alice-8",
@@ -473,7 +515,8 @@
           "valence": 0.3,
           "tier": "direct",
           "accurate": true,
-          "target": "bob"
+          "target": "bob",
+          "core": false
         },
         {
           "id": "mem-alice-9",
@@ -489,7 +532,8 @@
           "valence": -0.4,
           "tier": "told",
           "accurate": true,
-          "target": "calum"
+          "target": "calum",
+          "core": false
         },
         {
           "id": "mem-alice-10",
@@ -505,7 +549,8 @@
           "valence": 0.7,
           "tier": "direct",
           "accurate": true,
-          "target": "alice"
+          "target": "alice",
+          "core": false
         }
       ],
       "beliefs": [
@@ -527,7 +572,8 @@
       "goals": [
         "Find out who leaked the plan",
         "Decide whether Bob can be forgiven"
-      ]
+      ],
+      "location": "courtyard"
     },
     "bob": {
       "id": "bob",
@@ -554,10 +600,13 @@
             "trust": 43,
             "affection": 34,
             "respect": 42,
-            "fear": 17
+            "fear": 17,
+            "anger": 0
           },
           "lastDelta": {},
-          "flags": []
+          "flags": [],
+          "anger": 0,
+          "history": []
         },
         "alice": {
           "trust": 46,
@@ -568,10 +617,13 @@
             "trust": 46,
             "affection": 29,
             "respect": 39,
-            "fear": 26
+            "fear": 26,
+            "anger": 0
           },
           "lastDelta": {},
-          "flags": []
+          "flags": [],
+          "anger": 0,
+          "history": []
         },
         "calum": {
           "trust": 57,
@@ -582,12 +634,15 @@
             "trust": 57,
             "affection": 73,
             "respect": 54,
-            "fear": 11
+            "fear": 11,
+            "anger": 0
           },
           "lastDelta": {},
           "flags": [
             "allied"
-          ]
+          ],
+          "anger": 0,
+          "history": []
         },
         "dana": {
           "trust": 28,
@@ -598,10 +653,13 @@
             "trust": 28,
             "affection": 24,
             "respect": 37,
-            "fear": 34
+            "fear": 34,
+            "anger": 0
           },
           "lastDelta": {},
-          "flags": []
+          "flags": [],
+          "anger": 0,
+          "history": []
         }
       },
       "memories": [
@@ -619,7 +677,8 @@
           "valence": -0.3,
           "tier": "direct",
           "accurate": true,
-          "target": "alice"
+          "target": "alice",
+          "core": true
         },
         {
           "id": "mem-bob-1",
@@ -635,7 +694,8 @@
           "valence": -0.5,
           "tier": "direct",
           "accurate": true,
-          "target": "alice"
+          "target": "alice",
+          "core": true
         },
         {
           "id": "mem-bob-2",
@@ -651,7 +711,8 @@
           "valence": 0.6,
           "tier": "direct",
           "accurate": true,
-          "target": "calum"
+          "target": "calum",
+          "core": false
         },
         {
           "id": "mem-bob-3",
@@ -667,7 +728,8 @@
           "valence": -0.7,
           "tier": "direct",
           "accurate": true,
-          "target": "bob"
+          "target": "bob",
+          "core": false
         },
         {
           "id": "mem-bob-4",
@@ -683,7 +745,8 @@
           "valence": 0.4,
           "tier": "direct",
           "accurate": true,
-          "target": "bob"
+          "target": "bob",
+          "core": false
         },
         {
           "id": "mem-bob-5",
@@ -699,7 +762,8 @@
           "valence": 0.5,
           "tier": "direct",
           "accurate": true,
-          "target": "calum"
+          "target": "calum",
+          "core": false
         },
         {
           "id": "mem-bob-6",
@@ -715,7 +779,8 @@
           "valence": -0.6,
           "tier": "direct",
           "accurate": true,
-          "target": "bob"
+          "target": "bob",
+          "core": false
         },
         {
           "id": "mem-bob-7",
@@ -731,7 +796,8 @@
           "valence": -0.3,
           "tier": "direct",
           "accurate": true,
-          "target": "bob"
+          "target": "bob",
+          "core": false
         },
         {
           "id": "mem-bob-8",
@@ -747,7 +813,8 @@
           "valence": -0.8,
           "tier": "direct",
           "accurate": true,
-          "target": "bob"
+          "target": "bob",
+          "core": false
         },
         {
           "id": "mem-bob-9",
@@ -763,7 +830,8 @@
           "valence": -0.5,
           "tier": "direct",
           "accurate": true,
-          "target": "alice"
+          "target": "alice",
+          "core": false
         }
       ],
       "beliefs": [
@@ -785,7 +853,8 @@
       "goals": [
         "Win Calum over",
         "Keep the leak buried"
-      ]
+      ],
+      "location": "hall"
     },
     "calum": {
       "id": "calum",
@@ -811,10 +880,13 @@
             "trust": 52,
             "affection": 47,
             "respect": 48,
-            "fear": 12
+            "fear": 12,
+            "anger": 0
           },
           "lastDelta": {},
-          "flags": []
+          "flags": [],
+          "anger": 0,
+          "history": []
         },
         "alice": {
           "trust": 59,
@@ -825,10 +897,13 @@
             "trust": 59,
             "affection": 56,
             "respect": 62,
-            "fear": 14
+            "fear": 14,
+            "anger": 0
           },
           "lastDelta": {},
-          "flags": []
+          "flags": [],
+          "anger": 0,
+          "history": []
         },
         "bob": {
           "trust": 64,
@@ -839,10 +914,13 @@
             "trust": 64,
             "affection": 58,
             "respect": 66,
-            "fear": 16
+            "fear": 16,
+            "anger": 0
           },
           "lastDelta": {},
-          "flags": []
+          "flags": [],
+          "anger": 0,
+          "history": []
         },
         "dana": {
           "trust": 53,
@@ -853,10 +931,13 @@
             "trust": 53,
             "affection": 51,
             "respect": 57,
-            "fear": 19
+            "fear": 19,
+            "anger": 0
           },
           "lastDelta": {},
-          "flags": []
+          "flags": [],
+          "anger": 0,
+          "history": []
         }
       },
       "memories": [
@@ -872,7 +953,8 @@
           "importance": 0.2,
           "valence": 0.0,
           "tier": "direct",
-          "accurate": true
+          "accurate": true,
+          "core": false
         },
         {
           "id": "mem-calum-1",
@@ -888,7 +970,8 @@
           "valence": 0.3,
           "tier": "direct",
           "accurate": true,
-          "target": "calum"
+          "target": "calum",
+          "core": false
         },
         {
           "id": "mem-calum-2",
@@ -904,7 +987,8 @@
           "valence": 0.4,
           "tier": "direct",
           "accurate": true,
-          "target": "calum"
+          "target": "calum",
+          "core": false
         },
         {
           "id": "mem-calum-3",
@@ -918,7 +1002,8 @@
           "importance": 0.3,
           "valence": -0.2,
           "tier": "direct",
-          "accurate": true
+          "accurate": true,
+          "core": false
         },
         {
           "id": "mem-calum-4",
@@ -934,7 +1019,8 @@
           "valence": 0.5,
           "tier": "direct",
           "accurate": true,
-          "target": "calum"
+          "target": "calum",
+          "core": false
         },
         {
           "id": "mem-calum-5",
@@ -950,7 +1036,8 @@
           "valence": -0.1,
           "tier": "direct",
           "accurate": true,
-          "target": "you"
+          "target": "you",
+          "core": false
         },
         {
           "id": "mem-calum-6",
@@ -966,7 +1053,8 @@
           "valence": 0.4,
           "tier": "direct",
           "accurate": true,
-          "target": "calum"
+          "target": "calum",
+          "core": false
         },
         {
           "id": "mem-calum-7",
@@ -982,7 +1070,8 @@
           "valence": -0.3,
           "tier": "told",
           "accurate": true,
-          "target": "calum"
+          "target": "calum",
+          "core": false
         },
         {
           "id": "mem-calum-8",
@@ -997,7 +1086,8 @@
           "importance": 0.45,
           "valence": 0.0,
           "tier": "direct",
-          "accurate": true
+          "accurate": true,
+          "core": false
         },
         {
           "id": "mem-calum-9",
@@ -1013,7 +1103,8 @@
           "valence": 0.2,
           "tier": "direct",
           "accurate": true,
-          "target": "calum"
+          "target": "calum",
+          "core": false
         }
       ],
       "beliefs": [
@@ -1035,7 +1126,8 @@
       "goals": [
         "Keep the peace",
         "Avoid taking sides"
-      ]
+      ],
+      "location": "courtyard"
     },
     "dana": {
       "id": "dana",
@@ -1061,10 +1153,13 @@
             "trust": 49,
             "affection": 42,
             "respect": 45,
-            "fear": 8
+            "fear": 8,
+            "anger": 0
           },
           "lastDelta": {},
-          "flags": []
+          "flags": [],
+          "anger": 0,
+          "history": []
         },
         "alice": {
           "trust": 77,
@@ -1075,10 +1170,13 @@
             "trust": 77,
             "affection": 71,
             "respect": 67,
-            "fear": 2
+            "fear": 2,
+            "anger": 0
           },
           "lastDelta": {},
-          "flags": []
+          "flags": [],
+          "anger": 0,
+          "history": []
         },
         "bob": {
           "trust": 22,
@@ -1089,12 +1187,15 @@
             "trust": 22,
             "affection": 16,
             "respect": 32,
-            "fear": 29
+            "fear": 29,
+            "anger": 0
           },
           "lastDelta": {},
           "flags": [
             "suspicious"
-          ]
+          ],
+          "anger": 0,
+          "history": []
         },
         "calum": {
           "trust": 56,
@@ -1105,10 +1206,13 @@
             "trust": 56,
             "affection": 54,
             "respect": 58,
-            "fear": 11
+            "fear": 11,
+            "anger": 0
           },
           "lastDelta": {},
-          "flags": []
+          "flags": [],
+          "anger": 0,
+          "history": []
         }
       },
       "memories": [
@@ -1126,7 +1230,8 @@
           "valence": -0.6,
           "tier": "direct",
           "accurate": true,
-          "target": "bob"
+          "target": "bob",
+          "core": true
         },
         {
           "id": "mem-dana-1",
@@ -1142,7 +1247,8 @@
           "valence": -0.8,
           "tier": "told",
           "accurate": true,
-          "target": "alice"
+          "target": "alice",
+          "core": true
         },
         {
           "id": "mem-dana-2",
@@ -1158,7 +1264,8 @@
           "valence": 0.6,
           "tier": "direct",
           "accurate": true,
-          "target": "alice"
+          "target": "alice",
+          "core": false
         },
         {
           "id": "mem-dana-3",
@@ -1174,7 +1281,8 @@
           "valence": 0.2,
           "tier": "direct",
           "accurate": true,
-          "target": "bob"
+          "target": "bob",
+          "core": false
         },
         {
           "id": "mem-dana-4",
@@ -1190,7 +1298,8 @@
           "valence": -0.2,
           "tier": "direct",
           "accurate": true,
-          "target": "dana"
+          "target": "dana",
+          "core": false
         },
         {
           "id": "mem-dana-5",
@@ -1206,7 +1315,8 @@
           "valence": -0.3,
           "tier": "direct",
           "accurate": true,
-          "target": "dana"
+          "target": "dana",
+          "core": false
         },
         {
           "id": "mem-dana-6",
@@ -1222,7 +1332,8 @@
           "valence": 0.1,
           "tier": "direct",
           "accurate": true,
-          "target": "dana"
+          "target": "dana",
+          "core": false
         },
         {
           "id": "mem-dana-7",
@@ -1238,7 +1349,8 @@
           "valence": 0.7,
           "tier": "direct",
           "accurate": true,
-          "target": "alice"
+          "target": "alice",
+          "core": false
         },
         {
           "id": "mem-dana-8",
@@ -1254,7 +1366,8 @@
           "valence": -0.4,
           "tier": "direct",
           "accurate": true,
-          "target": "calum"
+          "target": "calum",
+          "core": false
         },
         {
           "id": "mem-dana-9",
@@ -1270,7 +1383,8 @@
           "valence": 0.5,
           "tier": "direct",
           "accurate": true,
-          "target": "dana"
+          "target": "dana",
+          "core": false
         }
       ],
       "beliefs": [
@@ -1285,7 +1399,45 @@
       "goals": [
         "Protect Alice",
         "Expose whoever leaked the plan"
-      ]
+      ],
+      "location": "courtyard"
+    }
+  },
+  "day": 3,
+  "slot": 12,
+  "phase": "suspicion",
+  "conversations": {},
+  "pendingRequests": [],
+  "locations": {
+    "courtyard": {
+      "id": "courtyard",
+      "name": "Courtyard",
+      "connectsTo": [
+        "hall"
+      ],
+      "private": false
+    },
+    "hall": {
+      "id": "hall",
+      "name": "West Wing Hall",
+      "connectsTo": [
+        "courtyard"
+      ],
+      "private": false
+    }
+  },
+  "topics": {
+    "the-leak": {
+      "id": "the-leak",
+      "label": "the leaked plan",
+      "secret": false,
+      "awareOf": [
+        "you",
+        "alice",
+        "bob",
+        "dana"
+      ],
+      "evidence": []
     }
   }
 }

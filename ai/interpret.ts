@@ -1,4 +1,4 @@
-import type { CharacterId, MoveId, WorldState } from "@ai/types";
+import type { CharacterId, MoveId, WorldState } from "@sim/types";
 import type { InterpretResult, Move } from "@/lib/viewTypes";
 import { interpretPrompt, interpretResponseSchema } from "@ai/prompts/interpret";
 import { generateJson, mockMode } from "@ai/client";

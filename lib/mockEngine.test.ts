@@ -125,8 +125,11 @@ describe("B-05 / B-06 the player is part of the conversation", () => {
       (r) => r.move.actor === "dana" && r.move.target === playerId,
     );
     expect(answer).toBeGreaterThan(insult);
-    // Warm toward the player, so she's hurt rather than hostile.
-    expect(result.log[answer].move.id).toBe("Withdraw");
+    // Warm toward the player, so she pushes back rather than biting back.
+    // This was `Withdraw` until update 1: walking out relocates the responder
+    // and closes the thread, so an argument ended on its first beat and
+    // `Fight` was unreachable against anyone who didn't already hate you.
+    expect(result.log[answer].move.id).toBe("Confront");
   });
 
   it("bites back when the relationship is cold", () => {
@@ -165,12 +168,35 @@ describe("B-05 / B-06 the player is part of the conversation", () => {
 });
 
 describe("B-12 / B-13 beliefs and mood stop being decoration", () => {
-  it("moves a belief off its fixture confidence", () => {
-    const before = (seed as WorldState).characters.you.beliefs[0].confidence;
-    const after = play(12).characters.you.beliefs[0];
-    expect(after.confidence).not.toBe(before);
+  it("tracks a belief against the evidence its holder has", () => {
+    const before = (seed as WorldState).characters.you.beliefs[0];
+    const world = play(12);
+    const after = world.characters.you.beliefs[0];
+
+    // Confidence alone is a bad assertion — it oscillates as evidence arrives
+    // and can land back where it started. What matters is that the belief is
+    // derived: it names a subject, and the subject follows the evidence rather
+    // than the fixture. (Bob's own `SpreadRumor` tendency plants a false lead
+    // pointing at Calum, so this legitimately moves without the player acting.)
+    expect(after.subject).toBeTruthy();
+    expect(after.description).toContain(
+      world.characters[after.subject].name,
+    );
     expect(after.confidence).toBeGreaterThanOrEqual(0);
     expect(after.confidence).toBeLessThanOrEqual(1);
+
+    const moved =
+      after.subject !== before.subject || after.confidence !== before.confidence;
+    expect(moved).toBe(true);
+  });
+
+  it("moves Alice's suspicion as evidence reaches her, not on a timer", () => {
+    const before = (seed as WorldState).characters.alice.beliefs[0].confidence;
+    const after = play(12).characters.alice.beliefs[0];
+    // She starts holding one piece and picks up Dana's. Two is still short of
+    // the 0.7 she needs to act.
+    expect(after.confidence).toBeGreaterThan(before);
+    expect(after.confidence).toBeLessThan(0.7);
   });
 
   it("moves mood with the biggest thing that happened to you", () => {
@@ -182,8 +208,10 @@ describe("B-12 / B-13 beliefs and mood stop being decoration", () => {
       actor: playerId,
       target: "alice",
     }).state;
-    // affection -10 is the largest delta Alice owns this tick.
-    expect(after.characters.alice.state.mood).toBe("hurt");
+    // anger +18 is the largest delta Alice owns this tick — it overtook
+    // affection -10 when the fifth axis landed, and being furious is a truer
+    // read of being insulted than being hurt.
+    expect(after.characters.alice.state.mood).toBe("furious");
   });
 
   it("ignores a delta too small to feel", () => {

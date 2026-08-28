@@ -8,6 +8,7 @@ import type {
 } from "./viewTypes";
 
 import { metaFor } from "./moveMeta";
+import { formatClock } from "./clock";
 
 export interface SceneLine {
   id: string;
@@ -27,7 +28,9 @@ export interface FeedItem {
 export type RevealStep =
   | { kind: "utterance"; speaker: CharacterId; speakerName: string; line: string }
   | { kind: "delta"; from: CharacterId; to: CharacterId; field: RelationshipField; after: number }
-  | { kind: "feed"; event: SimEvent };
+  | { kind: "feed"; event: SimEvent }
+  /** The night pass, rendered once at the head of a new day. */
+  | { kind: "digest"; events: SimEvent[] };
 
 export interface RevealPlan {
   id: number;
@@ -81,7 +84,9 @@ export function initState({ world, playerId }: InitArgs): UiState {
         id: "line-intro",
         speaker: playerId,
         speakerName: world.characters[playerId]?.name || "You",
-        text: `You step into the ${world.scene.location}.`,
+        text: `${formatClock(world.day, world.slot)}. You step into the ${
+          world.locations[world.scene.location]?.name ?? world.scene.location
+        }.`,
         streaming: false,
         optimistic: false,
       },
@@ -126,6 +131,16 @@ function buildPlan(
 ): RevealPlan {
   const steps: RevealStep[] = [];
   const utterancesLeft = [...result.utterances];
+  // Deltas are *consumed*, not filtered. Filtering by `sourceActor` alone
+  // attributed every delta a character caused this tick to the first move they
+  // made — which was invisible while one conversation ran at a time and wrong
+  // the moment two could.
+  const deltasLeft = [...result.deltas];
+  const eventsLeft = [...result.events];
+
+  if (result.overnight && result.overnight.length > 0) {
+    steps.push({ kind: "digest", events: result.overnight });
+  }
 
   // Presence changes bracket the tick: you see someone walk in before they
   // start talking, and walk out after they've spoken.
@@ -150,16 +165,17 @@ function buildPlan(
         });
       }
     } else {
-      const event = result.events.find(
+      const at = eventsLeft.findIndex(
         (e) => e.actor === move.actor && e.type === "offscreen",
       );
-      if (event) steps.push({ kind: "feed", event });
+      if (at >= 0) steps.push({ kind: "feed", event: eventsLeft.splice(at, 1)[0] });
     }
 
-    const moveDeltas = result.deltas.filter(
-      (d) => d.sourceActor === move.actor,
-    );
-    for (const delta of moveDeltas) {
+    for (let i = deltasLeft.length - 1; i >= 0; i--) {
+      const delta = deltasLeft[i];
+      if (delta.sourceActor !== move.actor) continue;
+      if (delta.threadId !== resolved.threadId) continue;
+      deltasLeft.splice(i, 1);
       steps.push({
         kind: "delta",
         from: delta.from,
@@ -170,8 +186,32 @@ function buildPlan(
     }
   }
 
-  for (const event of result.events) {
-    if (event.type === "departure") steps.push({ kind: "feed", event });
+  // Anything the engine produced outside a move — a lapsed request, a status
+  // crossing, the ending. Without this they applied to the world silently and
+  // the bars jumped with no line explaining why.
+  for (const delta of deltasLeft) {
+    steps.push({
+      kind: "delta",
+      from: delta.from,
+      to: delta.to,
+      field: delta.field,
+      after: delta.after,
+    });
+  }
+
+  for (const event of eventsLeft) {
+    if (
+      event.type === "departure" ||
+      event.type === "lapsed" ||
+      event.type === "status" ||
+      event.type === "evidence" ||
+      event.type === "awkward" ||
+      event.type === "phase" ||
+      event.type === "ending" ||
+      event.type === "blocked"
+    ) {
+      steps.push({ kind: "feed", event });
+    }
   }
 
   return { id, steps };
@@ -302,7 +342,10 @@ export function reducer(state: UiState, action: Action): UiState {
             id: `line-reset-${Date.now()}`,
             speaker: state.playerId,
             speakerName: nameOf(action.world, state.playerId),
-            text: `You step into the ${action.world.scene.location}.`,
+            text: `${formatClock(action.world.day, action.world.slot)}. You step into the ${
+              action.world.locations[action.world.scene.location]?.name ??
+              action.world.scene.location
+            }.`,
             streaming: false,
             optimistic: false,
           },

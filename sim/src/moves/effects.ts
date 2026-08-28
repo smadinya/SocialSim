@@ -87,6 +87,13 @@ export const MOVE_EFFECTS: Record<KnownMoveId, RelationshipEffect[]> = {
     { field: "anger", amount: 12, onTarget: true },
     { field: "hate", amount: 8, onTarget: true },
   ],
+  Reassure: [
+    { field: "fear", amount: -10, onTarget: true },
+    { field: "anger", amount: -6, onTarget: true },
+    { field: "affection", amount: 4, onTarget: true },
+  ],
+  // Movement, not a social act: it fires no relationship effects.
+  GoTo: [],
   Withdraw: [],
   Wait: [],
 };

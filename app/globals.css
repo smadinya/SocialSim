@@ -8,6 +8,7 @@
   --amber-faint: #6f5a2e;
   --warm: #8fcf6a;
   --cold: #d9663f;
+  --anger: #e0483a;
   --ink: #e7d7a8;
   --muted: #8a7f5c;
   --font-mono: "JetBrains Mono", "IBM Plex Mono", ui-monospace, "SFMono-Regular",
@@ -553,4 +554,253 @@ body {
       "inspector"
       "feed";
   }
+}
+
+
+/* --- update 1: time, conversations, requests, status, map ---------------- */
+
+.status .field.urgent b {
+  color: var(--cold);
+}
+
+.daybar {
+  display: inline-block;
+  width: 84px;
+  height: 6px;
+  border: 1px solid var(--edge-bright);
+  background: #000;
+}
+
+.daybar-fill {
+  display: block;
+  height: 100%;
+  background: var(--amber-dim);
+  transition: width 320ms ease;
+}
+
+/* Who is talking to whom. The scene header used to be a comma list of
+   everyone in the room, which said nothing about who was in a conversation. */
+.talking {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--edge);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.talking .pair b {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.talking .pair.hot b,
+.talking .pair-heat {
+  color: var(--cold);
+}
+
+.talking .pair-topic {
+  color: var(--amber-dim);
+}
+
+/* A live ask, pinned above the move grid. Ignoring it is a choice and the
+   countdown is what makes it read as one. */
+.request-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.request {
+  border: 1px solid var(--amber-faint);
+  padding: 7px 9px;
+  background: rgba(242, 181, 68, 0.05);
+}
+
+.request-what {
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.request-ttl {
+  color: var(--muted);
+  margin-left: 8px;
+}
+
+.request-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.chip.warm {
+  border-color: var(--warm);
+  color: var(--warm);
+}
+
+.chip.cold {
+  border-color: var(--cold);
+  color: var(--cold);
+}
+
+.row-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.row-tab {
+  background: none;
+  border: 1px solid var(--edge);
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  padding: 2px 10px;
+  cursor: pointer;
+}
+
+.row-tab.active {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
+.menu-item.locked {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.bar-fill.anger {
+  background: var(--anger);
+}
+
+.pill {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  padding: 0 5px;
+  border: 1px solid var(--edge-bright);
+  color: var(--muted);
+  margin-left: 6px;
+}
+
+.pill.close,
+.pill.friend,
+.pill.ally {
+  border-color: var(--warm);
+  color: var(--warm);
+}
+
+.pill.rival,
+.pill.wary {
+  border-color: var(--amber-dim);
+  color: var(--amber-dim);
+}
+
+.pill.estranged,
+.pill.hostile {
+  border-color: var(--cold);
+  color: var(--cold);
+}
+
+.rel-was,
+.rel-flags {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 2px 0 4px;
+}
+
+.memory.core {
+  border-left: 2px solid var(--amber-dim);
+  padding-left: 7px;
+}
+
+/* The relationship map is an overlay, not a fifth grid area: `.shell` has four
+   named areas and a 900px breakpoint that stacks them, and adding a fifth
+   would have needed both rewritten. */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.map {
+  background: var(--panel);
+  border: 1px solid var(--edge-bright);
+  max-width: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.map-body {
+  overflow: auto;
+  padding: 10px;
+}
+
+.map-grid {
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.map-grid th {
+  color: var(--amber-dim);
+  font-weight: 500;
+  text-align: left;
+  padding: 4px 8px;
+  white-space: nowrap;
+}
+
+.map-grid tbody th {
+  cursor: pointer;
+}
+
+.map-grid td {
+  border: 1px solid var(--edge);
+  padding: 4px 8px;
+  vertical-align: top;
+  cursor: pointer;
+  min-width: 92px;
+}
+
+.map-grid td.self {
+  color: var(--edge-bright);
+  cursor: default;
+}
+
+.cell-status {
+  display: block;
+  color: var(--ink);
+}
+
+.cell-was {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.cell.close .cell-status,
+.cell.friend .cell-status,
+.cell.ally .cell-status {
+  color: var(--warm);
+}
+
+.cell.estranged .cell-status,
+.cell.hostile .cell-status {
+  color: var(--cold);
+}
+
+.cell.rival .cell-status,
+.cell.wary .cell-status {
+  color: var(--amber-dim);
+}
+
+.map-foot {
+  border-top: 1px solid var(--edge);
+  padding: 8px 10px;
+  text-align: right;
 }

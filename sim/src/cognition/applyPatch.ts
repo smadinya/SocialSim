@@ -10,9 +10,13 @@ import {
   validateCognitionPatch,
 } from "./validatePatch";
 
-/** The four relationship axes are 0..100 everywhere else; keep them so here. */
+/** The five relationship axes are 0..100 everywhere else; keep them so here.
+ *  Conversation `heat` shares the range and the same reason to clamp. */
 function clampAxis(path: string, value: number): number {
-  if (!/^\/characters\/[^/]+\/relationships\//.test(path)) return value;
+  const bounded =
+    /^\/characters\/[^/]+\/relationships\//.test(path) ||
+    /^\/conversations\/[^/]+\/heat$/.test(path);
+  if (!bounded) return value;
   return Math.min(100, Math.max(0, Math.round(value)));
 }
 

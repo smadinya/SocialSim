@@ -23,7 +23,7 @@ export async function POST(request: Request) {
   const input = (body.input ?? "").trim().slice(0, MAX_INPUT);
   if (!input) {
     return NextResponse.json({
-      move: { id: "Withdraw", actor: body.actor },
+      move: { id: "Wait", actor: body.actor },
       understoodAs: "Type something first.",
       ok: false,
     });

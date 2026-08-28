@@ -1,191 +1,887 @@
 {
   "turn": 6,
-  "clock": "Day 3 — 14:25",
+  "day": 3,
+  "slot": 13,
   "rngSeed": 20260822,
   "playerId": "you",
+  "phase": "suspicion",
   "scene": {
-    "location": "Courtyard — West Wing",
-    "presentCharacters": ["you", "alice", "dana"]
+    "location": "courtyard",
+    "presentCharacters": [
+      "you",
+      "alice",
+      "dana"
+    ]
+  },
+  "locations": {
+    "courtyard": {
+      "id": "courtyard",
+      "name": "Courtyard",
+      "connectsTo": [
+        "hall",
+        "kitchen"
+      ],
+      "private": false
+    },
+    "hall": {
+      "id": "hall",
+      "name": "West Wing Hall",
+      "connectsTo": [
+        "courtyard",
+        "library"
+      ],
+      "private": false
+    },
+    "library": {
+      "id": "library",
+      "name": "Library",
+      "connectsTo": [
+        "hall"
+      ],
+      "private": true
+    },
+    "kitchen": {
+      "id": "kitchen",
+      "name": "Kitchen",
+      "connectsTo": [
+        "courtyard"
+      ],
+      "private": false
+    }
+  },
+  "pendingRequests": [],
+  "topics": {
+    "the-leak": {
+      "id": "the-leak",
+      "label": "the leaked plan",
+      "secret": false,
+      "awareOf": [
+        "you",
+        "alice",
+        "bob",
+        "dana"
+      ],
+      "evidence": [
+        {
+          "id": "told-only-bob",
+          "topicId": "the-leak",
+          "claim": "Alice confided the plan to Bob and to nobody else.",
+          "heldBy": [
+            "alice"
+          ],
+          "accurate": true,
+          "pointsAt": "bob",
+          "weight": 0.35
+        },
+        {
+          "id": "bob-changed-story",
+          "topicId": "the-leak",
+          "claim": "Bob gave two different accounts of when he first heard it.",
+          "heldBy": [
+            "dana"
+          ],
+          "accurate": true,
+          "pointsAt": "bob",
+          "weight": 0.3
+        },
+        {
+          "id": "calum-heard-early",
+          "topicId": "the-leak",
+          "claim": "Bob mentioned the plan to Calum before anyone else knew.",
+          "heldBy": [
+            "calum"
+          ],
+          "accurate": true,
+          "pointsAt": "bob",
+          "weight": 0.3
+        },
+        {
+          "id": "bob-alibi-thin",
+          "topicId": "the-leak",
+          "claim": "Bob cannot account for the evening the rival found out.",
+          "heldBy": [],
+          "accurate": true,
+          "pointsAt": "bob",
+          "weight": 0.25,
+          "locked": true
+        },
+        {
+          "id": "calum-seen-with-rival",
+          "topicId": "the-leak",
+          "claim": "Calum was seen talking with the rival that week.",
+          "heldBy": [],
+          "accurate": false,
+          "pointsAt": "calum",
+          "weight": 0.4,
+          "locked": true
+        },
+        {
+          "id": "calum-was-alone",
+          "topicId": "the-leak",
+          "claim": "Calum had the run of the west wing the night it got out.",
+          "heldBy": [],
+          "accurate": false,
+          "pointsAt": "calum",
+          "weight": 0.35,
+          "locked": true
+        }
+      ]
+    },
+    "bob-and-calum": {
+      "id": "bob-and-calum",
+      "label": "Bob's sudden interest in Calum",
+      "secret": false,
+      "awareOf": [
+        "dana",
+        "calum",
+        "bob"
+      ],
+      "evidence": []
+    },
+    "dana-promise": {
+      "id": "dana-promise",
+      "label": "what Dana promised Alice",
+      "secret": true,
+      "awareOf": [
+        "alice",
+        "dana"
+      ],
+      "evidence": []
+    }
   },
   "characters": {
     "you": {
       "id": "you",
       "name": "Robin",
-      "traits": ["observer", "curious"],
+      "traits": [
+        "observer",
+        "curious"
+      ],
+      "location": "courtyard",
       "state": {
         "mood": "curious",
-        "emotions": { "tension": 30, "warmth": 45 }
+        "emotions": {
+          "tension": 30,
+          "warmth": 45
+        }
       },
       "relationships": {
-        "alice": { "trust": 50, "gratitude": 20, "affection": 48, "respect": 50, "fear": 5, "anger": 5, "jealousy": 3, "hate": 0 },
-        "bob": { "trust": 42, "gratitude": 10, "affection": 40, "respect": 45, "fear": 12, "anger": 12, "jealousy": 4, "hate": 5 },
-        "calum": { "trust": 48, "gratitude": 15, "affection": 45, "respect": 46, "fear": 6, "anger": 4, "jealousy": 2, "hate": 0 },
-        "dana": { "trust": 52, "gratitude": 18, "affection": 50, "respect": 50, "fear": 5, "anger": 3, "jealousy": 2, "hate": 0 }
+        "alice": {
+          "trust": 50,
+          "gratitude": 0,
+          "affection": 48,
+          "respect": 50,
+          "fear": 5,
+          "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
+          "baseline": {
+            "trust": 50,
+            "gratitude": 0,
+            "affection": 48,
+            "respect": 50,
+            "fear": 5,
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
+          },
+          "lastDelta": {},
+          "flags": [],
+          "history": []
+        },
+        "bob": {
+          "trust": 42,
+          "gratitude": 0,
+          "affection": 40,
+          "respect": 45,
+          "fear": 12,
+          "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
+          "baseline": {
+            "trust": 42,
+            "gratitude": 0,
+            "affection": 40,
+            "respect": 45,
+            "fear": 12,
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
+          },
+          "lastDelta": {},
+          "flags": [],
+          "history": []
+        },
+        "calum": {
+          "trust": 48,
+          "gratitude": 0,
+          "affection": 45,
+          "respect": 46,
+          "fear": 6,
+          "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
+          "baseline": {
+            "trust": 48,
+            "gratitude": 0,
+            "affection": 45,
+            "respect": 46,
+            "fear": 6,
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
+          },
+          "lastDelta": {},
+          "flags": [],
+          "history": []
+        },
+        "dana": {
+          "trust": 52,
+          "gratitude": 0,
+          "affection": 50,
+          "respect": 50,
+          "fear": 5,
+          "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
+          "baseline": {
+            "trust": 52,
+            "gratitude": 0,
+            "affection": 50,
+            "respect": 50,
+            "fear": 5,
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
+          },
+          "lastDelta": {},
+          "flags": [],
+          "history": []
+        }
       },
       "memories": [
         {
           "id": "mem-you-1",
           "turn": 1,
           "actor": "alice",
+          "description": "Alice pulled me aside and said she no longer knows who she can trust.",
+          "tags": [
+            "arrival",
+            "trust",
+            "alice",
+            "the-leak"
+          ],
+          "importance": 0.6,
+          "valence": -0.3,
+          "tier": "direct",
+          "accurate": true,
+          "core": true,
           "target": "you",
-          "description": "Alice pulled you aside and said she no longer knows who leaked her plan.",
-          "tags": ["arrival", "trust", "alice"],
-          "importance": 0.6
+          "topicId": "the-leak"
         }
       ],
       "beliefs": [
         {
-          "id": "bel-you-1",
-          "description": "Something happened between Alice and Bob before you arrived.",
-          "confidence": 0.55
+          "id": "bel-you-leak",
+          "subject": "bob",
+          "description": "Something happened between Alice and Bob before I arrived.",
+          "confidence": 0.4
         }
       ],
-      "goals": ["Figure out what really happened between Alice and Bob"]
+      "goals": [
+        "Find out who actually leaked the plan"
+      ]
     },
     "alice": {
       "id": "alice",
       "name": "Alice",
-      "traits": ["loyal", "proud"],
+      "traits": [
+        "loyal",
+        "proud"
+      ],
+      "location": "courtyard",
       "state": {
         "mood": "guarded",
-        "emotions": { "hurt": 60, "resolve": 55 }
+        "emotions": {
+          "hurt": 60,
+          "resolve": 55
+        }
       },
       "relationships": {
-        "you": { "trust": 55, "gratitude": 20, "affection": 50, "respect": 45, "fear": 5, "anger": 4, "jealousy": 2, "hate": 0 },
-        "bob": { "trust": 18, "gratitude": 0, "affection": 40, "respect": 35, "fear": 20, "anger": 65, "jealousy": 20, "hate": 55 },
-        "calum": { "trust": 60, "gratitude": 18, "affection": 45, "respect": 50, "fear": 8, "anger": 4, "jealousy": 3, "hate": 0 },
-        "dana": { "trust": 75, "gratitude": 40, "affection": 68, "respect": 60, "fear": 5, "anger": 2, "jealousy": 1, "hate": 0 }
+        "you": {
+          "trust": 55,
+          "gratitude": 0,
+          "affection": 50,
+          "respect": 45,
+          "fear": 5,
+          "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
+          "baseline": {
+            "trust": 55,
+            "gratitude": 0,
+            "affection": 50,
+            "respect": 45,
+            "fear": 5,
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
+          },
+          "lastDelta": {},
+          "flags": [],
+          "history": []
+        },
+        "bob": {
+          "trust": 34,
+          "gratitude": 0,
+          "affection": 40,
+          "respect": 35,
+          "fear": 20,
+          "anger": 15,
+          "jealousy": 0,
+          "hate": 0,
+          "baseline": {
+            "trust": 34,
+            "gratitude": 0,
+            "affection": 40,
+            "respect": 35,
+            "fear": 20,
+            "anger": 15,
+            "jealousy": 0,
+            "hate": 0
+          },
+          "lastDelta": {},
+          "flags": [],
+          "history": []
+        },
+        "calum": {
+          "trust": 60,
+          "gratitude": 0,
+          "affection": 45,
+          "respect": 50,
+          "fear": 8,
+          "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
+          "baseline": {
+            "trust": 60,
+            "gratitude": 0,
+            "affection": 45,
+            "respect": 50,
+            "fear": 8,
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
+          },
+          "lastDelta": {},
+          "flags": [],
+          "history": []
+        },
+        "dana": {
+          "trust": 75,
+          "gratitude": 0,
+          "affection": 68,
+          "respect": 60,
+          "fear": 5,
+          "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
+          "baseline": {
+            "trust": 75,
+            "gratitude": 0,
+            "affection": 68,
+            "respect": 60,
+            "fear": 5,
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
+          },
+          "lastDelta": {},
+          "flags": [],
+          "history": []
+        }
       },
       "memories": [
         {
           "id": "mem-alice-1",
           "turn": 0,
-          "actor": "bob",
-          "target": "alice",
-          "description": "Bob leaked the plan Alice trusted him with, then denied it to her face.",
-          "tags": ["betrayal", "bob", "secret"],
-          "importance": 0.95
+          "actor": "alice",
+          "description": "I told Bob the plan in confidence. Four days later a rival was acting on it.",
+          "tags": [
+            "betrayal",
+            "secret",
+            "the-leak"
+          ],
+          "importance": 0.95,
+          "valence": -0.8,
+          "tier": "direct",
+          "accurate": true,
+          "core": true,
+          "target": "bob",
+          "topicId": "the-leak"
         },
         {
           "id": "mem-alice-2",
           "turn": 4,
           "actor": "dana",
+          "description": "Dana promised to help me find out who really talked.",
+          "tags": [
+            "alliance",
+            "dana",
+            "dana-promise"
+          ],
+          "importance": 0.7,
+          "valence": 0.5,
+          "tier": "direct",
+          "accurate": true,
+          "core": true,
           "target": "alice",
-          "description": "Dana promised to help Alice find out who really talked.",
-          "tags": ["alliance", "dana"],
-          "importance": 0.7
+          "topicId": "dana-promise"
         }
       ],
       "beliefs": [
         {
-          "id": "bel-alice-1",
-          "description": "Bob is the one who leaked the plan.",
-          "confidence": 0.65
+          "id": "bel-alice-leak",
+          "subject": "bob",
+          "description": "Someone I trusted talked.",
+          "confidence": 0.35,
+          "sourceMemoryId": "mem-alice-1"
         }
       ],
-      "goals": ["Find out who leaked the plan", "Decide whether Bob can be forgiven"]
+      "goals": [
+        "Find out who leaked the plan",
+        "Decide whether Bob can be forgiven"
+      ]
     },
     "bob": {
       "id": "bob",
       "name": "Bob",
-      "traits": ["ambitious", "charming", "gossip"],
+      "traits": [
+        "ambitious",
+        "charming",
+        "gossip"
+      ],
+      "location": "hall",
       "state": {
         "mood": "smooth",
-        "emotions": { "guilt": 35, "confidence": 65 }
+        "emotions": {
+          "guilt": 35,
+          "confidence": 65
+        }
       },
       "relationships": {
-        "you": { "trust": 40, "gratitude": 8, "affection": 35, "respect": 42, "fear": 18, "anger": 8, "jealousy": 5, "hate": 2 },
-        "alice": { "trust": 45, "gratitude": 5, "affection": 30, "respect": 40, "fear": 25, "anger": 25, "jealousy": 12, "hate": 18 },
-        "calum": { "trust": 55, "gratitude": 25, "affection": 72, "respect": 50, "fear": 10, "anger": 3, "jealousy": 15, "hate": 0 },
-        "dana": { "trust": 30, "gratitude": 2, "affection": 25, "respect": 38, "fear": 35, "anger": 35, "jealousy": 5, "hate": 28 }
+        "you": {
+          "trust": 40,
+          "gratitude": 0,
+          "affection": 35,
+          "respect": 42,
+          "fear": 18,
+          "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
+          "baseline": {
+            "trust": 40,
+            "gratitude": 0,
+            "affection": 35,
+            "respect": 42,
+            "fear": 18,
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
+          },
+          "lastDelta": {},
+          "flags": [],
+          "history": []
+        },
+        "alice": {
+          "trust": 45,
+          "gratitude": 0,
+          "affection": 30,
+          "respect": 40,
+          "fear": 25,
+          "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
+          "baseline": {
+            "trust": 45,
+            "gratitude": 0,
+            "affection": 30,
+            "respect": 40,
+            "fear": 25,
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
+          },
+          "lastDelta": {},
+          "flags": [],
+          "history": []
+        },
+        "calum": {
+          "trust": 55,
+          "gratitude": 0,
+          "affection": 72,
+          "respect": 50,
+          "fear": 10,
+          "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
+          "baseline": {
+            "trust": 55,
+            "gratitude": 0,
+            "affection": 72,
+            "respect": 50,
+            "fear": 10,
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
+          },
+          "lastDelta": {},
+          "flags": [],
+          "history": []
+        },
+        "dana": {
+          "trust": 30,
+          "gratitude": 0,
+          "affection": 25,
+          "respect": 38,
+          "fear": 35,
+          "anger": 20,
+          "jealousy": 0,
+          "hate": 0,
+          "baseline": {
+            "trust": 30,
+            "gratitude": 0,
+            "affection": 25,
+            "respect": 38,
+            "fear": 35,
+            "anger": 20,
+            "jealousy": 0,
+            "hate": 0
+          },
+          "lastDelta": {},
+          "flags": [],
+          "history": []
+        }
       },
       "memories": [
         {
           "id": "mem-bob-1",
           "turn": 0,
           "actor": "bob",
+          "description": "I told a rival what Alice was planning, hoping to get ahead of her.",
+          "tags": [
+            "betrayal",
+            "secret",
+            "alice",
+            "the-leak"
+          ],
+          "importance": 0.95,
+          "valence": -0.4,
+          "tier": "direct",
+          "accurate": true,
+          "core": true,
           "target": "alice",
-          "description": "Bob told a rival what Alice was planning, hoping to get ahead.",
-          "tags": ["betrayal", "secret", "alice"],
-          "importance": 0.9
+          "topicId": "the-leak"
         }
       ],
       "beliefs": [
         {
           "id": "bel-bob-1",
-          "description": "Nobody can prove it was him.",
+          "subject": "bob",
+          "description": "Nobody can prove it was me.",
           "confidence": 0.6
         }
       ],
-      "goals": ["Win Calum over", "Keep the leak buried"]
+      "goals": [
+        "Win Calum over",
+        "Keep the leak buried"
+      ]
     },
     "calum": {
       "id": "calum",
       "name": "Calum",
-      "traits": ["cautious", "kind"],
+      "traits": [
+        "cautious",
+        "kind"
+      ],
+      "location": "kitchen",
       "state": {
         "mood": "relaxed",
-        "emotions": { "ease": 55, "curiosity": 40 }
+        "emotions": {
+          "ease": 55,
+          "curiosity": 40
+        }
       },
       "relationships": {
-        "you": { "trust": 50, "gratitude": 15, "affection": 45, "respect": 48, "fear": 6, "anger": 3, "jealousy": 2, "hate": 0 },
-        "alice": { "trust": 58, "gratitude": 20, "affection": 50, "respect": 52, "fear": 8, "anger": 3, "jealousy": 4, "hate": 0 },
-        "bob": { "trust": 60, "gratitude": 18, "affection": 55, "respect": 58, "fear": 12, "anger": 4, "jealousy": 3, "hate": 0 },
-        "dana": { "trust": 52, "gratitude": 16, "affection": 48, "respect": 50, "fear": 10, "anger": 3, "jealousy": 2, "hate": 0 }
+        "you": {
+          "trust": 50,
+          "gratitude": 0,
+          "affection": 45,
+          "respect": 48,
+          "fear": 6,
+          "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
+          "baseline": {
+            "trust": 50,
+            "gratitude": 0,
+            "affection": 45,
+            "respect": 48,
+            "fear": 6,
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
+          },
+          "lastDelta": {},
+          "flags": [],
+          "history": []
+        },
+        "alice": {
+          "trust": 58,
+          "gratitude": 0,
+          "affection": 50,
+          "respect": 52,
+          "fear": 8,
+          "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
+          "baseline": {
+            "trust": 58,
+            "gratitude": 0,
+            "affection": 50,
+            "respect": 52,
+            "fear": 8,
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
+          },
+          "lastDelta": {},
+          "flags": [],
+          "history": []
+        },
+        "bob": {
+          "trust": 60,
+          "gratitude": 0,
+          "affection": 55,
+          "respect": 58,
+          "fear": 12,
+          "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
+          "baseline": {
+            "trust": 60,
+            "gratitude": 0,
+            "affection": 55,
+            "respect": 58,
+            "fear": 12,
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
+          },
+          "lastDelta": {},
+          "flags": [],
+          "history": []
+        },
+        "dana": {
+          "trust": 52,
+          "gratitude": 0,
+          "affection": 48,
+          "respect": 50,
+          "fear": 10,
+          "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
+          "baseline": {
+            "trust": 52,
+            "gratitude": 0,
+            "affection": 48,
+            "respect": 50,
+            "fear": 10,
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
+          },
+          "lastDelta": {},
+          "flags": [],
+          "history": []
+        }
       },
       "memories": [
         {
           "id": "mem-calum-1",
           "turn": 3,
           "actor": "bob",
+          "description": "Bob mentioned Alice's plan to me. I assumed everyone knew.",
+          "tags": [
+            "bob",
+            "attention",
+            "the-leak"
+          ],
+          "importance": 0.5,
+          "valence": 0.0,
+          "tier": "direct",
+          "accurate": true,
+          "core": false,
           "target": "calum",
-          "description": "Bob has been unusually friendly with Calum lately.",
-          "tags": ["bob", "attention"],
-          "importance": 0.5
+          "topicId": "the-leak"
         }
       ],
       "beliefs": [
         {
           "id": "bel-calum-1",
+          "subject": "alice",
           "description": "The group feels tense but no one will say why.",
           "confidence": 0.5
         }
       ],
-      "goals": ["Keep the peace", "Avoid taking sides"]
+      "goals": [
+        "Keep the peace",
+        "Avoid taking sides"
+      ]
     },
     "dana": {
       "id": "dana",
       "name": "Dana",
-      "traits": ["blunt", "loyal"],
+      "traits": [
+        "blunt",
+        "loyal"
+      ],
+      "location": "courtyard",
       "state": {
         "mood": "wary",
-        "emotions": { "suspicion": 60, "loyalty": 70 }
+        "emotions": {
+          "suspicion": 60,
+          "loyalty": 70
+        }
       },
       "relationships": {
-        "you": { "trust": 48, "gratitude": 15, "affection": 42, "respect": 45, "fear": 8, "anger": 5, "jealousy": 2, "hate": 0 },
-        "alice": { "trust": 78, "gratitude": 45, "affection": 70, "respect": 65, "fear": 4, "anger": 1, "jealousy": 1, "hate": 0 },
-        "bob": { "trust": 22, "gratitude": 0, "affection": 15, "respect": 30, "fear": 30, "anger": 70, "jealousy": 4, "hate": 60 },
-        "calum": { "trust": 55, "gratitude": 18, "affection": 50, "respect": 52, "fear": 10, "anger": 3, "jealousy": 2, "hate": 0 }
+        "you": {
+          "trust": 48,
+          "gratitude": 0,
+          "affection": 42,
+          "respect": 45,
+          "fear": 8,
+          "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
+          "baseline": {
+            "trust": 48,
+            "gratitude": 0,
+            "affection": 42,
+            "respect": 45,
+            "fear": 8,
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
+          },
+          "lastDelta": {},
+          "flags": [],
+          "history": []
+        },
+        "alice": {
+          "trust": 78,
+          "gratitude": 0,
+          "affection": 70,
+          "respect": 65,
+          "fear": 4,
+          "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
+          "baseline": {
+            "trust": 78,
+            "gratitude": 0,
+            "affection": 70,
+            "respect": 65,
+            "fear": 4,
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
+          },
+          "lastDelta": {},
+          "flags": [],
+          "history": []
+        },
+        "bob": {
+          "trust": 22,
+          "gratitude": 0,
+          "affection": 15,
+          "respect": 30,
+          "fear": 30,
+          "anger": 45,
+          "jealousy": 0,
+          "hate": 0,
+          "baseline": {
+            "trust": 22,
+            "gratitude": 0,
+            "affection": 15,
+            "respect": 30,
+            "fear": 30,
+            "anger": 45,
+            "jealousy": 0,
+            "hate": 0
+          },
+          "lastDelta": {},
+          "flags": [],
+          "history": []
+        },
+        "calum": {
+          "trust": 55,
+          "gratitude": 0,
+          "affection": 50,
+          "respect": 52,
+          "fear": 10,
+          "anger": 0,
+          "jealousy": 0,
+          "hate": 0,
+          "baseline": {
+            "trust": 55,
+            "gratitude": 0,
+            "affection": 50,
+            "respect": 52,
+            "fear": 10,
+            "anger": 0,
+            "jealousy": 0,
+            "hate": 0
+          },
+          "lastDelta": {},
+          "flags": [],
+          "history": []
+        }
       },
       "memories": [
         {
           "id": "mem-dana-1",
           "turn": 2,
           "actor": "bob",
+          "description": "I caught Bob changing his story about when he heard the plan.",
+          "tags": [
+            "bob",
+            "suspicion",
+            "secret",
+            "the-leak"
+          ],
+          "importance": 0.8,
+          "valence": -0.5,
+          "tier": "direct",
+          "accurate": true,
+          "core": true,
           "target": "dana",
-          "description": "Dana caught Bob changing his story about the plan.",
-          "tags": ["bob", "suspicion", "secret"],
-          "importance": 0.8
+          "topicId": "the-leak"
         }
       ],
       "beliefs": [
         {
-          "id": "bel-dana-1",
+          "id": "bel-dana-leak",
+          "subject": "bob",
           "description": "Bob is hiding something and Calum is being pulled into it.",
           "confidence": 0.6
         }
       ],
-      "goals": ["Protect Alice", "Expose whoever leaked the plan"]
+      "goals": [
+        "Protect Alice",
+        "Expose whoever leaked the plan"
+      ]
     }
-  }
+  },
+  "threads": {}
 }
