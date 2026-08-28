@@ -42,8 +42,9 @@ stub dialogue, real relationship math — so it plays fine with the server off.
 | `npm run build` / `npm start` | Production build and serve |
 | `npm run typecheck` | `tsc --noEmit` across app + sim |
 | `npm run lint` | ESLint across `app`, `components`, `lib`, `sim` |
+| `npm test` | Vitest across `ai`, `lib`, `sim` (`test:watch` to keep it running) |
 
-`lint` and `typecheck` must both pass before a merge — see
+`lint`, `typecheck` and `test` must all pass before a merge — see
 [`CONTRIBUTING.md`](./CONTRIBUTING.md). `npm run build` runs ESLint too and fails on
 any lint error.
 
@@ -151,8 +152,16 @@ and `getLegalMoves` remain permissive stubs, and there is no volition scoring �
 tendency tables in `lib/mockEngine.ts` stand in for it. That port is the next thing
 on the critical path.
 
-See [`plan.md`](./plan.md) for what update 1 changed, why, and §9 for where the plan
-turned out to be wrong.
+See [`plan.md`](./plan.md) for what update 1 changed and why — §9 for where the plan
+turned out to be wrong, and §10 for the playtest pass that followed it, including two
+balance questions left open on purpose.
+
+**Defects are found by playing, not by unit-testing the pieces.** The whole of §9 was
+true while the game read as broken on screen. `lib/playtest.test.ts` drives complete
+playthroughs — five play styles across eight seeds, day 3 to the ending — and asserts
+on what a scene *reads like*: that a conversation has two people in it, that nobody
+repeats themselves, that the player is never walked out of their own scene. Put a
+regression there when it is something you watched happen.
 
 ---
 

@@ -902,3 +902,77 @@ suspicion climbing 0.35 → 0.65 as Dana's evidence reached her → an insult ch
   handful per 40 turns; a test caps it at 3 per pair per 20.
 - `determineObservers` implements co-location; the `private` flag is plumbed and checked
   but both branches currently agree, pending an "overheard from the next room" tier.
+
+---
+
+## 10. Playtest pass — as found, as fixed, still open
+
+§9 was written from a live run and a passing suite. Both were true and neither was
+enough: the whole of §9 held while the game read as broken on screen. What found the
+rest was driving *complete playthroughs headlessly* — five play styles across eight
+seeds, day 3 to the ending, asserting on what a scene reads like rather than on what a
+function returns. Every defect below survived `typecheck`, `lint` and 93 green tests.
+
+The harness is now `lib/playtest.test.ts` (24 tests). Add to it, not to `update1.test.ts`,
+when a defect is something you *watched happen* rather than something you reasoned about.
+
+### What §9 got wrong about itself
+
+Both entries under "Two things that came out better than planned" were the same bug
+wearing a hat.
+
+`overhear` was described as making watching-and-waiting a real way to find things out.
+It had no gate at all, so a room was a public address system: one question put to Alice
+on the opening turn handed her keystone secret to Bob, Calum and Dana simultaneously,
+and by the endgame all five characters held all six pieces of evidence. "Three true
+pieces convict Bob, two lies frame Calum, and Alice cannot tell the difference" — the
+premise in §6 — cannot survive everyone holding everything. The frame path "emerging
+without the player" was the same flood seen from the other end.
+
+The lesson is narrower than it looks: a mechanism that fires *unconditionally* looks
+like emergence in a single recorded run and like entropy over eight. One run is an
+anecdote.
+
+### Fixed
+
+| Found | Cause |
+|---|---|
+| Bob proposed an alliance to Calum 119 times across 8 runs; Calum never once answered | `respondTo` ran for the player's move only, and `legalTendencies` confines an engaged character to tendencies aimed at their partner — empty for most pairs |
+| A thread's beats and heat vanished mid-tick | Conversation ids collided within a turn: the same pair can open a second thread in one tick and `openOrJoin` overwrote the first record in place |
+| 194 cases of a speaker saying the identical sentence three ticks running | A tendency table plus a weighted roll is a stationary process with no view of what the actor just did |
+| `MAX_TURNS` bought nothing | The same two reopened on the next tick; it only ever reset heat and the beat list. Now gated by `REOPEN_COOLDOWN` |
+| Alice answered thirty consecutive questions with "There's something you should know" | The line is written in `resolveMove` before `resolveTopical` discovers there is nothing left to hand over |
+| Bob told Robin "Robin has been talking"; Dana told Alice "leave Alice out of this" | `{target}` (addressed) and `{subject}` (talked about) conflated. `ai/fallbacks.ts` drew the distinction but never used its own `{subject}` placeholder — all nine three-party lines hardcoded "them" |
+| An NPC `Fight` teleported the player out of the room; the feed said "Robin walks out." | `loser = move.target` was unconditional, directly under a comment asserting the player is never walked out |
+| `Withdraw` spent a move and changed nothing for the player | Correctly skipped the relocation, incorrectly skipped the disengagement too |
+| "Calum learns: Calum was seen talking with the rival that week" | Neither `shareableEvidence` nor `overhear` excluded the person the evidence points at; it also fed `suspicionOf` a self-pointing weight |
+| "Spread a rumor to Alice about Bob" planted the lie about Calum | Both interpreters wrote `args.subject`; nothing read it |
+| The reckoning phase was announced and resolved in the same tick | `phaseFor` and `advancePhase` tested the identical condition, on a day 5 that holds no moves. Now opens on the evening of day 4 |
+| "Bob has grown wary of Dana" printed when Bob went estranged → wary | Status alone cannot say which way a crossing went. Same for the memory written with it, which read as a betrayal even when the pair had improved |
+| "just ask, don't fight" parsed as `Fight` | Keyword priority was table order, not the order the words appear in the player's input |
+
+Measured over the same sweep — one-sided conversations 121 → 0, consecutive repeated
+lines 194 → 0, unrequested player relocations 22 → 0, evidence reaching its own
+subject 14 → 0.
+
+### Still open — two design calls, not defects
+
+**Doing nothing reaches the true ending on 5 of 8 seeds.** This is the autonomous world
+working as §2.2 describes it: Alice's `AskAbout` tendency is what makes the mystery move
+without the player. It is *intended* that the cast can get there alone — but "alone,
+most of the time" is a different claim, and it costs the player's presence some of its
+meaning. The fix, if it is one, is retuning Alice's tendency weights or raising what
+`RECKONING_CONFIDENCE` demands, not another engine change. Left alone deliberately:
+tuning it silently while fixing bugs would hide a design decision inside a bug fix.
+
+Against that: a player who gathers evidence and reports it to Alice now reaches
+`exposed` on 8/8 seeds, and a player who frames Calum reaches `wrong-person` on 8/8.
+Agency exists in both directions; the question is only how much the floor should be.
+
+**Badgering one person now ends worse than it used to.** Asking Alice the same question
+every turn ends `unresolved-suspicion` on 8/8 seeds, against 0.65 confidence before.
+Two causes, both deliberate: she refuses once she has nothing left to give rather than
+faking a reveal, and a conversation genuinely occupies both people, so monopolising her
+starves her own investigation. The outcome is worse and the *feedback* is better — she
+now visibly says no, where before the player got a revelation line and no way to learn
+that nothing had happened. Flagged rather than tuned, for the same reason as above.
