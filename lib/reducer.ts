@@ -9,6 +9,7 @@ import type {
 
 import { metaFor } from "./moveMeta";
 import { formatClock } from "./clock";
+import { normalizeWorldState } from "@sim/world/normalize";
 
 export interface SceneLine {
   id: string;
@@ -72,6 +73,7 @@ export interface InitArgs {
 }
 
 export function initState({ world, playerId }: InitArgs): UiState {
+  world = normalizeWorldState(world);
   const present = world.scene.presentCharacters;
   const firstOther = present.find((id) => id !== playerId) || playerId;
 
@@ -329,22 +331,27 @@ export function reducer(state: UiState, action: Action): UiState {
     case "setBusy":
       return { ...state, busy: action.busy };
 
-    case "replaceWorld":
+    case "replaceWorld": {
+      // A world arriving here came from a save file, an import or the server,
+      // so it is normalized before anything reads it. Bound to a local rather
+      // than written back onto `action`: a reducer that mutates its action is
+      // one StrictMode double-invoke away from being hard to reason about.
+      const world = normalizeWorldState(action.world);
       return {
         ...state,
-        world: action.world,
+        world,
         selectedId:
-          action.world.scene.presentCharacters.find(
+          world.scene.presentCharacters.find(
             (id) => id !== state.playerId,
           ) || state.playerId,
         scene: [
           {
             id: `line-reset-${Date.now()}`,
             speaker: state.playerId,
-            speakerName: nameOf(action.world, state.playerId),
-            text: `${formatClock(action.world.day, action.world.slot)}. You step into the ${
-              action.world.locations[action.world.scene.location]?.name ??
-              action.world.scene.location
+            speakerName: nameOf(world, state.playerId),
+            text: `${formatClock(world.day, world.slot)}. You step into the ${
+              world.locations[world.scene.location]?.name ??
+              world.scene.location
             }.`,
             streaming: false,
             optimistic: false,
@@ -357,6 +364,7 @@ export function reducer(state: UiState, action: Action): UiState {
         busy: false,
         status: action.status,
       };
+    }
 
     default:
       return state;

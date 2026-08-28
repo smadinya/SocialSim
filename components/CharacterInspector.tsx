@@ -95,6 +95,14 @@ export default function CharacterInspector({
                     <span className={`pill ${status}`}>{status}</span>
                     {!onScene && <span className="rel-where">off scene</span>}
                   </div>
+                  {/* One status, not a label set. Both branches shipped a
+                      renderer for this row: the pill above plus this line come
+                      from `statusFor`, which has the hysteresis that stopped
+                      the feed announcing and un-announcing a friendship inside
+                      three turns, and it is the vocabulary the relationship map
+                      already uses. Track A's `relationshipLabels` is still what
+                      the `sim/` engine scores against — it is just not a second
+                      answer to "are they friends" in the same panel. */}
                   {last && (
                     <div className="rel-was">
                       was {last.was} until turn {last.turn}

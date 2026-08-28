@@ -14,6 +14,7 @@ import { MOVE_IDS } from "@sim/moves/catalog";
 import { formatClock, movesLeft } from "@/lib/clock";
 import { between, talkingPairs } from "@/lib/conversations";
 import { topicsKnownTo } from "@/lib/topics";
+import { linkMoveToPlayerRequest } from "@/lib/requestMoves";
 import {
   clearSession,
   exportSession,
@@ -171,19 +172,36 @@ export default function Terminal({ fixture }: Props) {
   }, [state.pending]);
 
   async function performMove(move: Move) {
-    dispatch({ type: "beginTurn", move });
     const snapshot = stateRef.current.world;
+    const linkedMove = linkMoveToPlayerRequest(move, snapshot, playerId);
+    dispatch({ type: "beginTurn", move: linkedMove });
     try {
       if (useServer) {
-        const { result, mode } = await postTurn(snapshot, playerId, move);
+        const { result, mode } = await postTurn(snapshot, playerId, linkedMove);
         setAiMode(mode);
         dispatch({ type: "applyResult", result });
       } else {
-        dispatch({ type: "applyResult", result: runTick(snapshot, playerId, move) });
+        dispatch({ type: "applyResult", result: runTick(snapshot, playerId, linkedMove) });
       }
     } catch {
       setAiMode("mock");
-      dispatch({ type: "applyResult", result: runTick(snapshot, playerId, move) });
+      // The engine is still `lib/mockEngine.ts`: `sim/`'s tick advances `turn`
+      // and nothing else, so routing the game through `runSimTick` would stop
+      // the clock, the rooms, the threads and the scenario phase dead. The
+      // adapter is in `lib/simEngine.ts` and takes over when the port lands.
+      try {
+        const result = runTick(snapshot, playerId, linkedMove);
+        dispatch({ type: "applyResult", result });
+      } catch (error) {
+        // The local path is the fallback; if it throws too there is nothing
+        // left to fall back to, so say so rather than leaving `busy` stuck on.
+        dispatch({
+          type: "understood",
+          text: error instanceof Error ? error.message : "That move is not legal right now.",
+          ok: false,
+        });
+        dispatch({ type: "setBusy", busy: false });
+      }
     }
   }
 

@@ -11,6 +11,10 @@ import { heatState } from "@/lib/moveMeta";
  * trust 10. The top memory is what stops a cached line ignoring what just
  * happened.
  *
+ * The request context is in the key for the same reason: an `Ask` that is a
+ * clarification of "help me with the missing ledger" is not the same line as
+ * a cold `Ask`, and a hit across the two answers a question nobody asked.
+ *
  * The topic and the heat band are in the key for the same reason `speaker` and
  * `target` are: without them two conversations about different things, or the
  * same pair before and after it turned into a shouting match, collide — and a
@@ -33,6 +37,9 @@ export function cacheKey(u: PendingUtterance): string {
   const axes = REL_FIELDS.map((f: RelationshipAxis) => bucket(rel[f])).join("/");
   const top = u.retrievedMemories[0];
   const topMemory = top ? [...top.tags].sort().join(",") : "none";
+  const request = u.requestContext
+    ? `${u.requestContext.requesterName}:${u.requestContext.subject}:${u.requestContext.aboutName ?? "none"}`
+    : "none";
   return [
     u.speaker,
     u.move.id,
@@ -45,6 +52,9 @@ export function cacheKey(u: PendingUtterance): string {
     // The reply is different when it opens a conversation and when it is the
     // fifth thing said in one.
     u.threadBeats.length > 0 ? "mid" : "open",
+    // A clarification of a help request is not interchangeable with a cold
+    // open of the same move, so the request it answers is part of the key.
+    request,
   ].join("|");
 }
 

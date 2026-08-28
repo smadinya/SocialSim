@@ -88,6 +88,15 @@ export function toPendingUtterance(
     ? world.topics[conversation.topicId]?.label
     : undefined;
 
+  // A reply carries the request it answers, so the line can be about the
+  // thing that was actually asked instead of a fresh topic.
+  const replyToRequestId = typeof move.args?.replyToRequestId === "string"
+    ? move.args.replyToRequestId
+    : undefined;
+  const request = replyToRequestId
+    ? world.socialRequests?.[replyToRequestId]
+    : undefined;
+
   return {
     speaker: move.actor,
     move,
@@ -101,6 +110,14 @@ export function toPendingUtterance(
     traits: speaker?.traits ?? [],
     targetName: nameOf(world, move.target),
     subjectName: nameOf(world, move.args?.subject as CharacterId | undefined),
+    requestContext: request
+      ? {
+          requestId: request.id,
+          requesterName: nameOf(world, request.requester) ?? request.requester,
+          subject: request.subject,
+          aboutName: nameOf(world, request.about),
+        }
+      : undefined,
     castNames: Object.keys(world.characters)
       .filter((id) => id !== move.actor)
       .map((id) => world.characters[id].name),

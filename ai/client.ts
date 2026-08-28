@@ -21,7 +21,14 @@ const MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
 // bimodal: ~0.7-1.2s normally, ~26-30s on a stall, and nothing in between. A
 // 15s deadline plus a retry meant a worst case of 30s of frozen UI ending in a
 // stub line anyway. There is nothing between 6s and 26s to catch.
-const TIMEOUT_MS = 6000;
+function configuredTimeoutMs(): number {
+  const configured = Number(process.env.GEMINI_TIMEOUT_MS);
+  return Number.isFinite(configured) && configured >= 1000 && configured <= 60000
+    ? Math.round(configured)
+    : 12000;
+}
+
+const TIMEOUT_MS = configuredTimeoutMs();
 
 /**
  * Mock mode is the default. `MOCK_LLM=1` forces it; no key means it regardless,
@@ -167,7 +174,9 @@ export async function generateJson(
 
     const message = tagged instanceof Error ? tagged.message : String(tagged);
     lastFailure = { when: new Date().toISOString(), message };
-    console.warn(`[ai] ${MODEL} call failed: ${message.slice(0, 300)}`);
+    const detail = `[ai] ${MODEL} call failed: ${message.slice(0, 300)}; using deterministic fallback`;
+    if (tagged instanceof TimeoutError) console.info(detail);
+    else console.warn(detail);
     throw tagged;
   }
 }

@@ -17,6 +17,14 @@ export async function POST(request: Request) {
   // for nothing. It couldn't even validate: `isLegalMove` returns true for any
   // non-empty string, so the `catch` was unreachable.
   //
+  // This is `runTick`, not `runSimTick`, and it has to stay that way until the
+  // `sim/` port catches up: `sim/tick` advances `turn` and nothing else, so
+  // routing the server path through it left `slot` unspent and `threads`
+  // empty — the same Greet that costs a move and opens a thread locally cost
+  // nothing here. `server: on/off` is advertised as producing the same result
+  // either way, and two engines behind one toggle is how that stops being true
+  // without anything failing.
+  //
   // When Track A ships real preconditions this becomes a direct
   // `isLegalMove(move, world)` before `runTick` — no clone, no tick — and an
   // illegal move returns a refusal instead of executing.

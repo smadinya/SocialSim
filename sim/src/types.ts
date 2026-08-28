@@ -62,12 +62,19 @@ export type RelationshipValues = Record<RelationshipAxis, number>;
  * `lastDelta` is what moved this tick; prompts and bar animations both read it.
  * `flags` are discrete states a move sets or clears.
  * `history` is the ledger behind "who was what before".
+ *
+ * Two ledgers, deliberately. `history` records STATUS crossings (neutral ->
+ * wary) and is what the inspector and the relationship map read. Track A's
+ * `axisHistory` records every AXIS change with the event that caused it, and
+ * is what its label scoring reads. Both branches called their ledger
+ * `history`; collapsing them would have silently truncated one consumer.
  */
 export interface Relationship extends RelationshipValues {
   baseline: RelationshipValues;
   lastDelta: Partial<RelationshipValues>;
   flags: string[];
   history: RelationshipEvent[];
+  axisHistory?: RelationshipHistoryEntry[];
 }
 
 /**
@@ -88,6 +95,7 @@ export interface RelationshipState {
   lastDelta?: Partial<RelationshipValues>;
   flags?: string[];
   history?: RelationshipEvent[];
+  axisHistory?: RelationshipHistoryEntry[];
 }
 
 export type RelationshipStatus =
@@ -105,6 +113,18 @@ export interface RelationshipEvent {
   was: RelationshipStatus;
   now: RelationshipStatus;
   because?: string;
+}
+
+/** Track A's per-axis ledger entry: what moved, why, and how it read before. */
+export interface RelationshipHistoryEntry {
+  turn: number;
+  eventId: string;
+  moveId: MoveId;
+  field: RelationshipAxis;
+  before: number;
+  after: number;
+  labelsBefore: string[];
+  labelsAfter: string[];
 }
 
 // --- memory and belief ----------------------------------------------------
@@ -134,6 +154,11 @@ export interface Memory {
 
   topicId?: TopicId;
   threadId?: ThreadId;
+
+  /** Track A's back-references: the event that wrote this, and the
+   *  conversation it was a beat of. */
+  eventId?: string;
+  conversationId?: ConversationId;
 }
 
 export interface Belief {
@@ -210,6 +235,8 @@ export interface Topic {
 export type ConversationStatus = "active" | "paused" | "ended";
 export type SocialRequestStatus =
   | "pending"
+  | "clarification_requested"
+  | "delayed"
   | "accepted"
   | "refused"
   | "fulfilled"
@@ -274,6 +301,21 @@ export interface SocialRequest {
   resolutionEventId?: string;
 }
 
+export type SocialObligationStatus = "active" | "fulfilled" | "failed";
+
+/** Accepting a request creates an obligation; fulfilling it is a later fact. */
+export interface SocialObligation {
+  id: string;
+  requestId: SocialRequestId;
+  debtor: CharacterId;
+  creditor: CharacterId;
+  subject: string;
+  createdTurn: number;
+  status: SocialObligationStatus;
+  resolvedTurn?: number;
+  resolutionEventId?: string;
+}
+
 // --- threads: what the mock engine actually runs --------------------------
 
 export interface ThreadBeat {
@@ -328,6 +370,8 @@ export type ScenarioPhase =
 export interface SceneState {
   location: LocationId;
   presentCharacters: CharacterId[];
+  /** Who walked out, where to, and the turn they come back. */
+  departures?: Record<CharacterId, { returnTurn: number; location: string }>;
 }
 
 export interface WorldState {
@@ -353,6 +397,7 @@ export interface WorldState {
    */
   conversations?: Record<ConversationId, Conversation>;
   socialRequests?: Record<SocialRequestId, SocialRequest>;
+  obligations?: Record<string, SocialObligation>;
 
   scene: SceneState;
 
@@ -401,6 +446,39 @@ export interface RelationshipDelta {
   threadId?: ThreadId;
 }
 
+// --- behaviour tracing ----------------------------------------------------
+
+export type BehaviorBranch =
+  | "danger"
+  | "reply"
+  | "conversation"
+  | "obligation"
+  | "reaction"
+  | "goal"
+  | "social-approach"
+  | "idle";
+
+/** Why an actor chose what it chose. Diagnostic — never read by the engine. */
+export interface DecisionTrace {
+  actor: CharacterId;
+  branch: BehaviorBranch;
+  selected?: Move;
+  score: number;
+  reasons: string[];
+  contributingMemories: string[];
+  rejectedConflicts: string[];
+  alternatives: Array<{ move: Move; score: number }>;
+}
+
+/** The persistent request a linked reply answers. Was in the deleted
+ *  `ai/types.ts` shim; it belongs here with the rest of the contract. */
+export interface RequestDialogueContext {
+  requestId: string;
+  requesterName: string;
+  subject: string;
+  aboutName?: string;
+}
+
 /** Track B realizes these deterministic facts as dialogue. */
 export interface PendingUtterance {
   speaker: CharacterId;
@@ -423,6 +501,9 @@ export interface PendingUtterance {
   topicLabel?: string;
   threadBeats: string[];
   heat: number;
+
+  /** The persistent request this move answers, if it is a linked reply. */
+  requestContext?: RequestDialogueContext;
 }
 
 export interface Utterance {
@@ -449,4 +530,6 @@ export interface TickResult {
   /** Track B's future input. */
   pendingUtterances?: PendingUtterance[];
   eligibleActors?: CharacterId[];
+  /** Track A's per-actor reasoning record for the tick. */
+  decisionTraces?: DecisionTrace[];
 }

@@ -1,4 +1,5 @@
 import type { WorldState } from "./viewTypes";
+import { normalizeWorldState } from "@sim/world/normalize";
 
 const KEY = "socialsim-save";
 
@@ -69,10 +70,19 @@ export function parseImported(text: string): WorldState | null {
   }
 }
 
-/** Rejects anything that isn't a v2 world, rather than loading half of one. */
+/**
+ * Rejects anything that isn't a v3 world, rather than loading half of one.
+ *
+ * Version gate first, then normalize: the gate throws out a blob from a
+ * scenario that no longer exists, and `normalizeWorldState` fills the fields a
+ * blob from *this* version can still legitimately be missing — the Track A
+ * records (`conversations`, `socialRequests`, `obligations`, scene
+ * `departures`) and any relationship axis added since it was written.
+ * Normalizing without the gate would happily hand back a half-initialised v1.
+ */
 function worldFrom(blob: SaveBlob): WorldState | null {
   if (!blob || blob.version !== SAVE_VERSION || !blob.world) return null;
   const w = blob.world;
   if (typeof w.day !== "number" || !w.locations || !w.topics) return null;
-  return w;
+  return normalizeWorldState(w);
 }

@@ -46,6 +46,8 @@ export const MOVE_META: Record<string, MoveMeta> = {
   Reassure: { id: "Reassure", label: "Reassure", needsTarget: true, row: "Warm", blurb: "Take the heat out of it." },
   Defend: { id: "Defend", label: "Defend", needsTarget: true, row: "Warm", blurb: "Take someone's side." },
   Comply: { id: "Comply", label: "Comply", needsTarget: true, row: "Warm", blurb: "Go along with it." },
+  // Track A's move: what an accepted request costs you later.
+  Help: { id: "Help", label: "Help", needsTarget: true, row: "Warm", blurb: "Fulfill a promise to help." },
 
   // --- Move ---------------------------------------------------------------
   GoTo: { id: "GoTo", label: "Go to", needsTarget: false, row: "Move", blurb: "Walk somewhere else." },
@@ -58,13 +60,13 @@ export const MENU_ROWS: MenuRow[] = ["Talk", "Press", "Warm", "Move"];
 /**
  * The menu is grouped into rows because the catalog outgrew the number keys.
  * `Terminal` maps 1-9 to the *open row*, not to a flat list — the merged
- * catalog is 24 moves and a flat list would leave most of them unreachable.
+ * catalog is 25 moves and a flat list would leave most of them unreachable.
  * No row may exceed nine entries.
  */
 export const MENU_MOVE_IDS: Record<MenuRow, MoveId[]> = {
   Talk: ["Greet", "Talk", "Ask", "RevealSecret", "AskForHelp", "Propose"],
   Press: ["Confront", "Argue", "Insult", "Mimic", "Fight", "SpreadRumor", "Refuse"],
-  Warm: ["GiveGift", "Hug", "Comfort", "Flirt", "Apologize", "Reassure", "Defend", "Comply"],
+  Warm: ["GiveGift", "Hug", "Comfort", "Flirt", "Apologize", "Reassure", "Defend", "Comply", "Help"],
   Move: ["GoTo", "Withdraw", "Wait"],
 };
 
@@ -118,6 +120,11 @@ export const MOCK_EFFECTS: Record<string, MockEffect[]> = {
     { field: "gratitude", amount: 8, onTarget: true },
     { field: "affection", amount: 7, onTarget: true },
     { field: "respect", amount: 5, onTarget: true },
+  ],
+  Help: [
+    { field: "gratitude", amount: 9, onTarget: true },
+    { field: "trust", amount: 6, onTarget: true },
+    { field: "respect", amount: 4, onTarget: true },
   ],
   Insult: [
     { field: "affection", amount: -10, onTarget: true },
@@ -239,6 +246,7 @@ export const MOVE_IMPORTANCE: Record<string, number> = {
   Defend: 0.6,
   Propose: 0.5,
   Flirt: 0.5,
+  Help: 0.7,
   GiveGift: 0.4,
   Hug: 0.4,
   Comfort: 0.4,
@@ -387,6 +395,7 @@ const DIALOGUE_TEMPLATES: Record<string, string> = {
   SpreadRumor: "You didn't hear it from me, {target}, but there's been talk about {subject}.",
   RevealSecret: "There's something you should know, {target}. It's about {subject}.",
   Defend: "Leave {subject} out of this, {target} — they've done nothing wrong.",
+  Help: "I'll take care of it, {target}. I gave you my word.",
   Insult: "Honestly, {target}, I expected better and got less.",
   Apologize: "I'm sorry, {target}. I should have handled that differently.",
   Reassure: "Breathe, {target}. Nobody here is coming for you.",
