@@ -8,6 +8,7 @@ import type {
 } from "./viewTypes";
 
 import { metaFor } from "./moveMeta";
+import { normalizeWorldState } from "@sim/world/normalize";
 
 export interface SceneLine {
   id: string;
@@ -69,6 +70,7 @@ export interface InitArgs {
 }
 
 export function initState({ world, playerId }: InitArgs): UiState {
+  world = normalizeWorldState(world);
   const present = world.scene.presentCharacters;
   const firstOther = present.find((id) => id !== playerId) || playerId;
 
@@ -290,6 +292,7 @@ export function reducer(state: UiState, action: Action): UiState {
       return { ...state, busy: action.busy };
 
     case "replaceWorld":
+      action.world = normalizeWorldState(action.world);
       return {
         ...state,
         world: action.world,

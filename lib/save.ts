@@ -1,4 +1,5 @@
 import type { WorldState } from "./viewTypes";
+import { normalizeWorldState } from "@sim/world/normalize";
 
 const KEY = "socialsim-save";
 
@@ -24,7 +25,7 @@ export function loadSession(): WorldState | null {
   if (!raw) return null;
   try {
     const blob = JSON.parse(raw) as SaveBlob;
-    return blob.world;
+    return normalizeWorldState(blob.world);
   } catch {
     return null;
   }
@@ -56,7 +57,7 @@ export function exportSession(world: WorldState): void {
 export function parseImported(text: string): WorldState | null {
   try {
     const blob = JSON.parse(text) as SaveBlob;
-    if (blob && blob.world) return blob.world;
+    if (blob && blob.world) return normalizeWorldState(blob.world);
     return null;
   } catch {
     return null;

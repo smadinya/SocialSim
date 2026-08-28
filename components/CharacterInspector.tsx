@@ -3,6 +3,10 @@
 import type { CharacterId, WorldState } from "@/lib/viewTypes";
 import { REL_FIELDS } from "@/lib/format";
 import TrustBar from "./TrustBar";
+import {
+  previousRelationshipLabels,
+  relationshipLabels,
+} from "@sim/relationships";
 
 interface Props {
   world: WorldState;
@@ -81,11 +85,23 @@ export default function CharacterInspector({
               const rel = character.relationships[id];
               if (!rel) return null;
               const onScene = present.includes(id);
+              const currentLabels = relationshipLabels(rel);
+              const previousLabels = previousRelationshipLabels(rel);
+              const changed = currentLabels.join("|") !== previousLabels.join("|");
               return (
                 <div className={`rel-row ${onScene ? "" : "offscene"}`} key={id}>
                   <div className="rel-name">
                     <span>{world.characters[id].name}</span>
                     {!onScene && <span className="rel-where">off scene</span>}
+                  </div>
+                  <div className="rel-labels">
+                    <span>{currentLabels.join(" · ")}</span>
+                    {changed && (
+                      <span className="rel-previous">was {previousLabels.join(" · ")}</span>
+                    )}
+                    {(rel.flags ?? []).map((flag) => (
+                      <span className="rel-flag" key={flag}>{flag}</span>
+                    ))}
                   </div>
                   {REL_FIELDS.map((field) => (
                     <TrustBar key={field} field={field} value={rel[field] ?? 0} />

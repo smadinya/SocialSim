@@ -30,6 +30,7 @@ const COLD: Record<string, string> = {
   RevealSecret:
     "I'll tell you once, {target}, and only because you'd find out anyway. It's about them.",
   Defend: "Leave them out of it, {target}. Your problem is with me.",
+  Help: "I'll do what I promised, {target}. Don't read more into it.",
   Insult: "You've never once surprised me, {target}. Not once.",
   Apologize: "Fine. I'm sorry, {target}. Is that what you wanted?",
   AskForHelp: "I wouldn't ask if there were anyone else, {target}.",
@@ -54,6 +55,7 @@ const NEUTRAL: Record<string, string> = {
   SpreadRumor: "You didn't hear it from me, {target}, but there's been talk about them.",
   RevealSecret: "There's something you should know, {target}. It's about them.",
   Defend: "Leave them out of this, {target} — they've done nothing wrong.",
+  Help: "I'll help, {target}. Let's get it done.",
   Insult: "Honestly, {target}, I expected better and got less.",
   Apologize: "I'm sorry, {target}. I should have handled that differently.",
   AskForHelp: "I can't do this alone, {target}. Will you help me?",
@@ -86,6 +88,7 @@ const WARM: Record<string, string> = {
   RevealSecret:
     "You deserve to hear it from me first, {target}, before anyone else. It's about them.",
   Defend: "Not while I'm standing here, {target}. Leave them alone.",
+  Help: "Of course I'll help, {target}. You never had to wonder.",
   Insult: "I'm going to say something unkind, {target}, and I'll regret it later.",
   Apologize: "I'm sorry, {target}. Truly. I've hated how I left it.",
   AskForHelp: "You're the only one I'd trust with this, {target}.",

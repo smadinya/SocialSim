@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { CharacterId, Move, WorldState } from "@/lib/viewTypes";
 import { beginTick, endTick, mockMode, realize, toPendingUtterance, worstTick } from "@ai/index";
-import { runTick } from "@/lib/mockEngine";
+import { runSimTick } from "@/lib/simEngine";
 
 interface TurnBody {
   world: WorldState;
@@ -12,18 +12,10 @@ interface TurnBody {
 export async function POST(request: Request) {
   const body = (await request.json()) as TurnBody;
 
-  // `simTick` used to run here and have its result discarded — a
-  // `structuredClone` of the whole world, plus events and observers, per turn
-  // for nothing. It couldn't even validate: `isLegalMove` returns true for any
-  // non-empty string, so the `catch` was unreachable.
-  //
-  // When Track A ships real preconditions this becomes a direct
-  // `isLegalMove(move, world)` before `runTick` — no clone, no tick — and an
-  // illegal move returns a refusal instead of executing.
-  const result = runTick(body.world, body.playerId, body.move);
+  const result = runSimTick(body.world, body.playerId, body.move);
 
   // The realization seam, route-side until Track A/C split it out of the
-  // engine: `runTick` fills `Utterance.line` with a stub, and every witnessed
+  // engine: `runSimTick` fills `Utterance.line` with a stub, and every witnessed
   // line is replaced here with a realized one. `ai/adapt.ts` is what makes
   // that possible against today's `WorldState`.
   //

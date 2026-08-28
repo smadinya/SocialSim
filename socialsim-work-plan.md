@@ -20,7 +20,7 @@ Concretely: while the player is telling Alice a rumor about Bob, Bob can indepen
 
 This has two consequences that show up throughout the plan below:
 
-1. **5 characters, not 3.** Alice/Bob/Player was fine for a mockup with one NPC-NPC pair. A cast where autonomous interactions are the *point* needs enough characters that those interactions have room to be interesting — rivalries, alliances, triangles. Relationships are directed and pairwise, so 5 characters means 20 directed relationship pairs, each now carrying four axes.
+1. **5 characters, not 3.** Alice/Bob/Player was fine for a mockup with one NPC-NPC pair. A cast where autonomous interactions are the *point* needs enough characters that those interactions have room to be interesting — rivalries, alliances, triangles. Relationships are directed and pairwise, so 5 characters means 20 directed relationship pairs, each now carrying eight axes.
 2. **Multi-actor resolution is core engine logic, not a stretch goal.** Ordering, conflicts, and "does the player's move still make sense after an NPC's move already changed the target's mood this tick" have to be designed into `tick()` from the start, not patched in after G1.
 
 ---
@@ -32,11 +32,11 @@ Everything below this section is the target. This is the ground truth, so nobody
 | Track | State |
 |---|---|
 | **C — Frontend** | Effectively at G1. Four panels including the event feed, streaming dialogue, animated relationship deltas, save/load/export/import, keyboard nav, free-text input with an "I understood that as" confirmation. Renders with the server off. |
-| **A — Simulation core** | Scaffolded, not load-bearing. `sim/src/types.ts` is real. `isLegalMove`, `getLegalMoves`, `determineObservers`, `validateCognitionPatch` and `applyCognitionPatch` are TODO stubs. No volition scoring. `sim/package.json` declares vitest; there are no tests. |
-| **B — AI integration** | Not started. No `@google/genai`, no Zod, no prompts, and `MOCK_LLM` appears in `env.local.example` and in this document but is read by **zero lines of code**. |
-| **D — Content & design** | 5-character fixture with all four axes, 13 moves with effect tables, one scenario. No fallback line table, no memory templates, no context-multiplier rules, no baselines or flags. |
+| **A — Simulation core** | Now load-bearing for the live route and local fallback. It owns normalized conversation/request/obligation state, participant reservations, relationship history/labels, observer-scoped beat memories, deterministic priority-plus-utility NPC selection, decision traces, and complete move effects including `Help`. Observer tiers, baseline decay, long-run verification, and offline GA tuning remain outstanding. |
+| **B — AI integration** | Active. `@google/genai`, Zod validation, mock mode, prompts, retrieval, relationship-bucketed fallbacks, caching, retry/failure handling, interpretation, route-side realization, and tests exist. Track B still owns a temporary prompt-contract mirror in `ai/types.ts`; it has not fully migrated to Track A's shared contracts. |
+| **D — Content & design** | 5-character fixture with eight relationship axes, an expanded action catalog including `Help`, a scenario, and three-tone fallback dialogue tables exist. Observer tiers, authored memory templates, context multipliers, authored baselines/flags, and GA fitness/tuning data remain outstanding. |
 
-**The engine you are playing is `lib/mockEngine.ts`, not `sim/`.** It already resolves the player's move plus up to two autonomous NPC moves per tick off a seeded RNG, orders them deterministically, applies clamped effects, writes memories to observers only, and routes unwitnessed moves into the event feed. `/api/turn` calls `simTick`, discards the result, and falls through to the mock. Track A's first job is to make `sim/` do what the mock already does — then go past it.
+**The engine you are playing is now `sim/`.** `lib/simEngine.ts` adapts its result for the UI, and `/api/turn` adds Track B dialogue realization. `lib/mockEngine.ts` remains as regression/reference code but is no longer used by the live route or local UI fallback.
 
 **Directory names.** The repo is `sim/` (aliased `@sim/*`) plus an app-root `lib/`. There is no `packages/`. Track B's package is `ai/`, aliased `@ai/*`. Don't scaffold a second tree because an older draft of this document said `packages/`.
 
@@ -170,7 +170,7 @@ export interface PendingUtterance {
   speaker: CharacterId;
   move: Move;
   mood: string;
-  relationshipSnapshot: Relationship;  // four axes + baseline + lastDelta + flags
+  relationshipSnapshot: Relationship;  // eight axes + baseline + lastDelta + flags
   speakerBeliefs: Belief[];            // the speaker's view, which may be wrong
   retrievedMemories: Memory[];         // filled by Track B before the call
   witnessedByPlayer: boolean;          // Track B's cost strategy branches on this
@@ -181,7 +181,7 @@ export function realize(u: PendingUtterance): Promise<{ line: string; deliveryNo
 export function interpret(input: string, legal: Move[], w: WorldState): Promise<Move>;
 ```
 
-**`TickResult` currently lives in `lib/viewTypes.ts`, which is Track C's file.** Moving it into `sim/src/types.ts` is part of G0, not a later cleanup — Track B and Track A both need to import it and neither should be reaching into the frontend to do so. `PendingUtterance` does not exist anywhere in the repo yet.
+**`TickResult` and the engine-facing `PendingUtterance` now live in `sim/src/types.ts`.** `lib/viewTypes.ts` re-exports the Track A types for frontend compatibility. Track B still has a richer temporary mirror in `ai/types.ts`; agreeing where its prompt-only fields live and deleting that mirror remains G0 cleanup.
 
 **The invariant that holds the whole design together:** the LLM never mutates `WorldState` and never decides *which* move an NPC takes — that's still Track A's deterministic rule engine, running for every NPC every tick, not just the one the player is talking to. Gemini only writes words: it realizes whatever move Track A already selected as dialogue, whether that move was the player's or an autonomous NPC's. If anyone proposes letting the model return relationship deltas or pick NPC actions directly "because it would be smarter," say no — you lose reproducibility, testability, and the ability to demo when the API rate-limits you.
 
@@ -191,7 +191,7 @@ export function interpret(input: string, legal: Move[], w: WorldState): Promise<
 
 Four fields above are new since the last revision and every one of them is a four-track change with a merge conflict attached if it lands late. Put these on the agenda **explicitly**:
 
-- Does `fear` earn its keep? **This one is answerable today, without debate:** in `lib/moveMeta.ts` `fear` appears in the effects of exactly one move (`Confront`). Either the move catalog differentiates it or it drops and you stop paying for four axes.
+- Does `fear` earn its keep? It now appears in `Confront` and `Fight`, but still has much less coverage than the positive axes. Either the move catalog differentiates it further or the team explicitly accepts that narrower role.
 - Does `speakerBeliefs` belong on `PendingUtterance`, or does Track B fetch it separately?
 - `Belief.subject` / `Belief.axis` — the repo's `Belief` is `{id, description, confidence}` today, free text only. Without a subject, Track B's false-belief test cannot be written.
 - `Memory.valence`, `Memory.tier`, `Memory.accurate` — Track B's retrieval formula reads `valence`; Track A's observer tiers write `tier`; `SpreadRumor` needs `accurate`.
@@ -207,7 +207,7 @@ Track A carries the largest share of the relationship & memory subsystem. Track 
 ### Build
 
 1. **State module.** `WorldState`, `Character`, `Relationship`, `Memory`, `Belief`. Directed relationships stored as a per-character map keyed by target — `character.relationships[targetId]` — not individual named fields. At 5 characters that's 20 directed pairs; they need to be enumerable so rules and UI can ask "who does Alice trust least" generically. `alice.relationships['bob']` and `bob.relationships['alice']` are separate values and must never be written together by accident — add a lint/test rule asserting a move's effects touch at most one direction unless the move explicitly lists both.
-   - **New:** each `Relationship` is four axes plus `baseline`, `lastDelta` and `flags`. The four axes and per-character `beliefs` already exist in `sim/src/types.ts` and in `fixtures/world.json`; `baseline`, `lastDelta` and `flags` do not.
+   - **Current:** each directed relationship has eight authoritative axes. `baseline`, `lastDelta`, transition history, and `flags` are still outstanding.
 2. **Rule engine.** Two-stage volition scoring, run for **every character each tick**, not only the one the player is engaging with:
    - `rankMotivations(npc, world) → ScoredMotivation[]`, keep top 2 above threshold
    - `rankMoves(npc, motivations, world) → ScoredMove[]`, keep top 1 above threshold
@@ -245,10 +245,37 @@ Track A carries the largest share of the relationship & memory subsystem. Track 
 
 ### Don't
 
-- Don't use behavior trees. The original proposal called for them, but they're built for continuous real-time NPC action; this is turn-based with a discrete action menu. Volition rules are the right tool and they're a third of the code.
+- Don't build a heavyweight real-time behavior-tree framework. Use the priority branches in `GAMEPLAY_TODO.md` to choose the current concern, then additive utility/volition scoring to rank legal targets and moves inside that branch.
 - Don't `import` anything from `next/` or `react` in this package. Enforce it in review.
 - Don't let move resolution order depend on `Object.keys()` or array iteration — it will work in dev and desync the moment character insertion order changes.
 - Don't let a generated string into `Memory.description`. Track A templates it.
+
+### Offline genetic tuning
+
+The genetic algorithm is a development-time optimizer, not the runtime decision-maker. Runtime remains the deterministic priority-plus-utility selector described above. For the same world, approved weight artifact, and RNG seed, it must choose the same NPC actions and produce the same decision traces.
+
+The versioned genome should contain bounded utility parameters such as goal-pursuit weight, relationship-fit weight, trait-expression weight, memory-relevance weight, novelty/repetition weight, response urgency, action or action-family biases, and the minimum utility required to act. Population size, mutation rate, crossover rate, elitism, generation count, simulation length, and scenario seeds are experiment controls, not genes used by gameplay.
+
+Each genome is evaluated in seeded 20-30 turn headless runs. Fitness reports separate normalized components for:
+
+- goal pursuit;
+- meaningful relationship change;
+- avoidance of repetitive action/target loops;
+- decision explainability from the emitted trace;
+- behavioral distinctiveness between characters; and
+- avoidance of total relationship collapse or axis saturation.
+
+Hard correctness failures—illegal moves, overlapping active conversations, ignored mandatory replies, NaN values, or out-of-range axes—invalidate a run instead of merely subtracting a few fitness points. Candidates train on fixed scenario seeds and are checked against held-out seeds to catch overfitting. Every run records its genome version, evaluator version, seeds, component scores, total fitness, and generation history.
+
+The final output is a human-readable, reviewed weight artifact loaded by the runtime utility system. Human playtesting remains a promotion gate: the GA narrows the search space, but it does not decide that behavior is believable or fun.
+
+Implementation order:
+
+1. Finish deterministic legal-move generation, priority branches, additive utility scoring, seeded tie-breaking, and decision traces.
+2. Add the deterministic headless scenario runner and explicit fitness metrics.
+3. Add seeded population initialization, selection, crossover, mutation, and elitism.
+4. Add training/validation scenario splits, reproducible reports, and regression baselines.
+5. Export an approved weight artifact and load it through the runtime scorer; never run evolution during a live game.
 
 ---
 
@@ -256,13 +283,13 @@ Track A carries the largest share of the relationship & memory subsystem. Track 
 
 **Deliverable:** `ai/` (aliased `@ai/*`) + the API route handlers that call it.
 
-Track B's job is narrower than it sounds and more interesting than it sounds. It writes no game state. What it owns is the translation in both directions: turning a `PendingUtterance` — a speaker, a move, four relationship axes with their deltas, some flags, a set of possibly-false beliefs, and five retrieved memories — into a line a character would say, and turning free player text back into a legal `Move`. Everything below assumes the relationship and memory model in `claude/socialsim-relationships-memory.md`.
+Track B's job is narrower than it sounds and more interesting than it sounds. It writes no game state. What it owns is the translation in both directions: turning a `PendingUtterance` — a speaker, a move, eight relationship axes with their deltas, some flags, a set of possibly-false beliefs, and five retrieved memories — into a line a character would say, and turning free player text back into a legal `Move`. Everything below assumes the relationship and memory model in `claude/socialsim-relationships-memory.md`.
 
 ### Build
 
 1. **Client setup.** `@google/genai`, server-side only. Key in `.env.local` as `GEMINI_API_KEY`, never `NEXT_PUBLIC_`. Check current model names in AI Studio — they churn; a flash-tier model is right for dialogue.
 
-2. **`MOCK_LLM=1`, first, before anything else.** It is documented in `env.local.example` and in this plan and is currently read by no code at all. Tracks C and D are blocked on it more than you are. It returns stub text instantly and must run the entire game — **including all autonomous NPC-NPC moves** — with zero API calls.
+2. **`MOCK_LLM=1`, first, before anything else.** *(Done.)* Mock mode is the default without a key, can be forced with `MOCK_LLM=1`, returns relationship-bucketed fallback lines, and makes zero model calls.
 
 3. **Memory retrieval.** Score in memory, no vector DB at this scale — at 5 characters over 30 turns the whole store is a few hundred records and this is a sort. Five weighted terms:
 
@@ -276,16 +303,13 @@ Track B's job is narrower than it sounds and more interesting than it sounds. It
 
    Take top 5. Retrieve **only from the speaker's own memory array** — never from the world, never from another character's.
 
-   Three of those terms depend on things that do not exist yet. Raise all three at the contracts meeting rather than discovering them mid-implementation:
-   - `m.valence` is a new field on `Memory`.
-   - `effectiveImportance`'s betrayal/secret floor needs a **tag convention**, agreed with Track D, for which tags are floored.
-   - `dominantAxisOfMove` needs a **move → primary axis** mapping that Track D owns. Most moves in `lib/moveMeta.ts` touch two axes today with no dominant one designated.
+   Retrieval and its owner-filtering tests now exist in `ai/retrieval.ts`. The move-axis mapping and importance-floor conventions are provisional Track B logic; Track D still needs to confirm them. `Memory.valence`, `tier`, and `accurate` are still compatibility defaults in `ai/adapt.ts`, not authoritative Track A fields.
 
    Owner-filtering is structurally free, not a thing you have to enforce: memories live in `character.memories[]`, so reading `world.characters[speaker].memories` is owner-filtered by construction. **Keep the Cara-absent test anyway — but understand that it guards the easy half.** The real leak risk is one layer up, in prompt assembly reaching into `world` for a third party's true relationship values. That is where a character learns something they never witnessed.
 
    Only reach for embeddings after you've felt this be insufficient.
 
-4. **Prompt assembly.** The realization prompt carries, in this order: character card, mood, the four relationship axes **with their `lastDelta` values**, active flags, top-5 memories as templated summary strings with turn numbers, and the move being performed.
+4. **Prompt assembly.** The realization prompt carries, in this order: character card, mood, the eight relationship axes **with their `lastDelta` values**, active flags, top-5 memories as templated summary strings with turn numbers, and the move being performed. *(Implemented through the Track B adapter while the richer fields remain absent from Track A's contracts.)*
 
    Two rules here that matter more than the wording of the prompt itself:
 
@@ -322,7 +346,7 @@ Track B's job is narrower than it sounds and more interesting than it sounds. It
 
 8. **Failure handling.** Timeout, retry once, then fall back to canned lines. **The game must remain playable with the network unplugged.**
 
-   The fallback table is bucketed by relationship, not one line per move: **hostile / neutral / warm** × ~15 moves ≈ 45 strings. Track D writes them; it's about an hour and it's what keeps `MOCK_LLM=1` runs legible enough to actually playtest against. A single canned line per move makes every stub run read identically and hides exactly the thing you're trying to tune — which is the state the repo is in right now, with 13 flat templates in `lib/moveMeta.ts`. Interpretation falls back to a `Confused` move.
+   The relationship-bucketed fallback table is implemented in `ai/fallbacks.ts` for cold / neutral / warm delivery. Keep it synchronized with the catalog: the new `Help` action currently lacks coverage, and `Wait` relies on the generic fallback.
 
    **`lib/format.ts` already exports what you need for the bucketing.** `relationshipTone(rel)` returns `warm | neutral | cold` and `bucket(value)` returns coarse thirds. Use them rather than inventing a second scheme that disagrees with the one the UI displays.
 
@@ -357,15 +381,15 @@ Most of this section already ships. What's left is listed as **outstanding** bel
    - Character inspector (right: mood, goal, relationships, beliefs, recent memories) — **scope the relationships list to whoever's selected/on-screen**, not a full 5×4 matrix. Four axes render as bars rather than numerals; with three other characters on screen that is twelve numbers and numerals don't fit. *(Done — `CharacterInspector` renders `REL_FIELDS` through `TrustBar`, scoped to present characters.)*
    - **Outstanding: a flag row per relationship.** `betrayed` / `indebted` / `allied` are discrete and don't belong on a bar.
    - **An event feed/ticker.** This is where off-screen autonomous moves surface — "Bob proposed to Calum" showing up as something the player *learns*, sourced from `TickResult.log` entries the player wasn't present for, distinct from the character inspector's own memory list. *(Done — `components/EventFeed.tsx`.)*
-4. **Two effects that sell it:** stream dialogue character-by-character at ~30ms, and animate relationship values ticking 32 → 28 rather than snapping. With four axes and multiple moves resolving per tick, **animate only the axes that actually moved**, and queue the animations rather than firing them simultaneously, so the player can follow what just happened. *(Done — the reducer queues off `TickResult.deltas`, which only carries changed fields. When Track A lands `Relationship.lastDelta`, read that rather than adding a second source of truth for the same thing.)*
+4. **Two effects that sell it:** stream dialogue character-by-character at ~30ms, and animate relationship values ticking 32 → 28 rather than snapping. With eight axes and multiple moves resolving per tick, **animate only the axes that actually moved**, and queue the animations rather than firing them simultaneously, so the player can follow what just happened. *(Done — the reducer queues off `TickResult.deltas`, which only carries changed fields. When Track A lands `Relationship.lastDelta`, read that rather than adding a second source of truth for the same thing.)*
 5. **State handling.** `useReducer` client mirror for optimistic menu response, reconcile from the server's `TickResult` — including several relationship values changing in one round trip. Save = one JSON blob per session; don't build a database. *(Done.)*
 6. **Custom action input.** Text field, disabled-with-spinner while interpreting, and a visible "I understood that as: *Confront Bob*" confirmation so players learn what the system can parse. *(Done — swaps to Track B's interpreter with no UI change.)*
-7. **Outstanding: move `TickResult` out of `lib/viewTypes.ts`.** It belongs in `sim/src/types.ts` where Tracks A and B can import it without reaching into the frontend. Part of G0.
+7. **Shared result contract.** *(Done for Track C.)* `TickResult` lives in `sim/src/types.ts`; `lib/viewTypes.ts` only re-exports it for frontend compatibility. Track B's richer temporary type mirror is a separate remaining cleanup.
 
 ### Definition of done
 
 - Renders correctly from a static `fixtures/world.json` with 5 characters, with the server off.
-- No layout break with a 20-character name, a 3-line dialogue response, multiple event-feed entries landing in one tick, or **four axes plus a flag row across a full on-screen cast**.
+- No layout break with a 20-character name, a 3-line dialogue response, multiple event-feed entries landing in one tick, or **eight axes plus a flag row across a full on-screen cast**.
 - Keyboard navigable — number keys pick menu options. It's a terminal game.
 
 ---
@@ -379,12 +403,12 @@ This track produces data files, not engine code. It's the one that makes the dif
 ### Build
 
 1. **Cast.** 5 characters with traits, starting relationships, a secret, and a want. *(Done — You, Alice, Bob, Calum, Dana in `fixtures/world.json`.)* Traits gate rules (`arrogant`, `loyal`, `gossip`) — coordinate the vocabulary with Track A.
-   - **Outstanding:** each of the 20 directed pairs now needs four axis values **plus a baseline per axis plus any starting flags** — roughly 5× the setup data per pair. The axes are in the fixture; baselines and flags are not.
-2. **Move catalog.** Target ~15 moves. Per move: base deltas on up to four axes, **an observer rule** (who sees it, at which tier), **a memory template with tags**, and **any context multipliers**. **Budget roughly double the original catalog task.** Start from: `Greet`, `Confront`, `GiveGift`, `SpreadRumor`, `RevealSecret`, `Defend`, `Insult`, `Apologize`, `AskForHelp`, `Refuse`, `Comply`, `Withdraw`, `Propose`. *(13 exist in `lib/moveMeta.ts` with 1–2 axes each and no observer rule, memory template, or multiplier.)*
+   - **Outstanding:** each of the 20 directed pairs needs eight axis values **plus a baseline per axis plus any starting flags**. The axes are in the fixture; baselines and flags are not.
+2. **Move catalog.** The catalog has expanded beyond the original target. Per move it still needs consistent base deltas, **an observer rule** (who sees it, at which tier), **a memory template with tags**, and **any context multipliers**. `Help` is currently present only in `sim/src/moves/catalog.ts`, so effects, metadata, mock behavior, and fallback coverage must be added before catalog exposure is complete.
    - **Also owed to Track B:** a **move → primary axis** mapping (for retrieval's `axisRelevance`) and a **tag convention** naming which memory tags are importance-floored (betrayal, secret). Small, and Track B's retrieval scorer is blocked without both.
-   - **Watch `fear`.** It appears in exactly one move's effects today (`Confront`). Either differentiate it across the catalog or say so at the contracts meeting and drop the axis — see the risk table.
+   - **Watch `fear`.** It appears in `Confront` and `Fight`, still much less often than the positive axes. Confirm that this narrow role is intentional or differentiate it further.
 3. **Rule tables.** Motivation rules, move rules, **and context multiplier rules**, all as data. Own the volition numbers — with 5 characters all scoring independently each tick, expect more emergent combinations than with 3, and expect to change the numbers more than a hundred times.
-4. **Fallback line table.** Hostile / neutral / warm × ~15 moves ≈ 45 strings, for Track B's `MOCK_LLM=1` path. About an hour of work, and Tracks B, C and D all depend on it being decent. Bucket with `relationshipTone()` from `lib/format.ts` so the tone the line assumes matches the tone the UI shows.
+4. **Fallback line table.** *(Implemented for the established actions.)* Cold / neutral / warm tables use `relationshipTone()` through Track B. Add explicit entries whenever the catalog grows; `Help` is the current gap.
 5. **Scenario.** A starting configuration with a built-in tension — Bob has already betrayed Alice, the player has to pick a side or play both, and Bob's own independent pursuit of Calum can complicate that without any player input. The Day 3 / 14:25 mockup implies a multi-day arc; decide how long a full run should be (30 turns is a good target). *(Done — see the README's scenario section.)*
 6. **Memory fixture with real depth.** `fixtures/world.json` currently gives each character one or two memories. Track B cannot test retrieval *ranking* against a pool that small — the top-5 cut never binds. Extend it to a multi-turn history per character, with mixed tags, tiers, valences and importances.
 7. **Playtesting log.** Every session, write down: what you expected, what happened, which rule caused the gap — and specifically, whether an autonomous NPC-NPC move surprised you in a good way or just read as noise, and whether a context multiplier's effect was visible or invisible. This document is what turns tuning from vibes into work.
@@ -406,7 +430,7 @@ No dates. Each gate is defined by what it unblocks, so the question is never "ar
 ### G0 — Contracts
 **Blocked by:** nothing.
 **Blocks:** literally everything.
-`types.ts` written and committed, including the directed-relationship map, the four axes with `baseline`/`lastDelta`/`flags`, `Memory`'s `valence`/`tier`/`accurate`, `Belief.subject`, `PendingUtterance` (which does not exist yet), and the multi-actor `TickResult.log` (which currently lives in `lib/viewTypes.ts` and has to move). Repo scaffolded, `.env.local` documented, `MOCK_LLM` flag agreed. The four contract decisions listed under *The seam* are settled here or they become week-three merge conflicts. Everyone can run `npm run dev`.
+`sim/src/types.ts` now owns directed relationship maps, eight axes, the engine-facing `PendingUtterance`, and the multi-actor `TickResult.log`. G0 remains open for relationship baseline/history/flags, authoritative `Memory.valence`/`tier`/`accurate`, structured belief fields, and migration of Track B's richer temporary mirror. Repo scaffolding, environment documentation, and mock mode are in place.
 
 ### G1 — Playable with no AI
 **Blocked by:** G0.
@@ -415,7 +439,7 @@ Hard-coded cast of 5, five moves, fixed menu, stub dialogue strings, real rules 
 
 **This should already be a game.** If it isn't fun with stub text — including the autonomous NPC-NPC moves reading as sensible rather than random — adding Gemini will not fix it, it will just make the un-fun harder to see. **This is the one gate worth stopping the project at.** If G1 lands flat, fix the design before writing another line of AI code.
 
-*Status: substantially met by `lib/mockEngine.ts` + the shipped UI, on all four axes and with observer-scoped memory.* An earlier draft proposed scoping G1 down to one axis and direct-tier memory only. That advice is overtaken — the four-axis version already reads fine in play. Don't scope back down; spend the slack on Track A porting the mock's behavior into `sim/`.
+*Status: substantially met by `lib/mockEngine.ts` + the shipped UI, on all eight axes and with observer-scoped memory.* An earlier draft proposed scoping G1 down to one axis and direct-tier memory only. That advice is overtaken. Spend the slack on Track A porting the mock's behavior into `sim/` and on the deterministic utility selector.
 
 ### G2 — Dialogue is alive
 **Blocked by:** G1 (needs real `PendingUtterance` objects to realize, for both player-facing and autonomous moves) and B's working Gemini client.
@@ -458,16 +482,12 @@ These aren't gates, but they stall people the same way:
 
 | If this is missing | These people are stuck |
 |---|---|
-| `types.ts` (with `PendingUtterance` and `TickResult` in it) | all four |
-| `claude/socialsim-relationships-memory.md` | B entirely — it's not in the repo |
-| `MOCK_LLM=1` actually implemented, not just documented | C and D, permanently |
-| `fixtures/world.json` (with all 5 characters) | C entirely, B for testing |
+| Agreement on the richer memory, belief, relationship-history, and prompt fields currently mirrored by Track B | A and B cannot delete the compatibility adapter/mirror |
+| `claude/socialsim-relationships-memory.md` or an equivalent committed spec | A, B, and D can implement incompatible semantics |
 | A memory fixture with real multi-turn history | B can't test retrieval *ranking* at all |
-| Move → primary axis mapping, and the floored-tag convention | B's retrieval scorer |
-| Seeded RNG in the engine | D can't reproduce anything they find |
-| Legal-move enum exposed by A | B can't build interpretation |
-| Deterministic multi-actor tick ordering | A can't hand off a stable `tick()`; B and C build against something that will reshuffle |
-| `witnessedByPlayer` on resolved moves | B has no input to a cost strategy |
+| Track D confirmation of the provisional move → primary-axis mapping and floored-tag convention | Retrieval tuning can drift from content semantics |
+| Complete catalog parity for `Help` | Typecheck and catalog coverage tests fail; interpretation/fallback behavior is incomplete |
+| Deterministic utility selection and a headless runner | The GA has no stable policy or evaluator to tune |
 | Debug panel showing winning motivation + score **+ contributing memories** | D is tuning blind — and tuning context multipliers is impossible without the third column |
 
 The bottom half of that table is the part teams forget. Track D cannot tune volition numbers without seeing which rule won *for which character, off which memories*, and Track B cannot constrain the model without knowing what's legal. All of them are small asks of Track A that unblock someone else's entire track — treat them as higher priority than they look.
@@ -507,11 +527,13 @@ The bottom half of that table is the part teams forget. Track D cannot tune voli
 
 Everything here is unblocked the moment G0 lands.
 
-- [ ] **All:** `types.ts` frozen — directed relationship maps with baseline/lastDelta/flags, `Memory.valence`/`tier`/`accurate`, `Belief.subject`, `PendingUtterance`, multi-actor `TickResult` moved out of `lib/viewTypes.ts`. The four contract decisions settled. Owners assigned above.
-- [ ] **A:** port `lib/mockEngine.ts`'s behavior into `sim/` — multi-actor candidate selection, seeded ordering, clamped effects, observer-scoped memory writes — replacing the stubbed `isLegalMove` / `getLegalMoves` / `determineObservers`. Then the legal-move enum and debug logging, because B and D are waiting on those. Then decay and context multipliers.
-- [ ] **B:** **ship `MOCK_LLM` for real first** — it's documented and unimplemented, and C and D need it more than you do. Then get the companion spec committed. Then the retrieval scorer against a hand-written memory fixture; it's pure and testable before any prompt exists. Then the Gemini client and one hard-coded realization call returning valid JSON. Cost strategy sketched before G2 opens.
-- [ ] **C:** flag row in the inspector; move `TickResult` into `sim/src/types.ts`. The rest of the panel work is done.
-- [ ] **D:** baselines and starting flags for the 20 directed pairs; the 45-line fallback table; the move → primary axis mapping and floored-tag convention that B is blocked on; then observer rules and memory templates per move.
+- [ ] **All:** finish the shared relationship-history, memory, belief, and prompt contracts; remove Track B's temporary mirror; settle the remaining contract decisions and assign owners.
+- [x] **A:** complete `Help` parity, conversation/request/obligation state, relationship history, beat memories, priority branches, utility scoring, seeded tie-breaking, decision traces, and live-route integration.
+- [ ] **A:** add observer tiers, baseline decay, long deterministic scenario verification, deadlock/noise checks, and the headless evaluator required before GA tuning.
+- [x] **B:** mock mode, Gemini client, Zod validation, retrieval, prompts, relationship-bucketed fallbacks, cache, interpretation, route-side realization, cost logging, and focused tests are present.
+- [ ] **B:** migrate off `ai/types.ts`, finish authoritative false-belief integration, and remeasure worst-case cost after Track A lifts the autonomous-move cap.
+- [ ] **C:** add relationship flag/history presentation, conversation partner/topic/request UI, and a decision-trace debug view. Shared `TickResult` consumption is done.
+- [ ] **D:** add baselines and starting flags for the 20 directed pairs; complete `Help`; confirm move-axis and floored-tag conventions; then add observer rules, memory templates, utility/fitness tuning data, and human review of evolved weights.
 
 ---
 
@@ -523,7 +545,7 @@ For anyone holding an older copy. Two things merged here that had drifted into s
 
 | Where | Change |
 |---|---|
-| The seam | Four axes + `baseline` + `lastDelta` + `flags`; `Memory.valence`/`tier`/`accurate`; `Belief.subject`/`axis`; `PendingUtterance.speakerBeliefs` |
+| The seam | Eight axes + `baseline` + `lastDelta` + `flags`; `Memory.valence`/`tier`/`accurate`; `Belief.subject`/`axis`; `PendingUtterance.speakerBeliefs` |
 | The seam | Memory summaries are **templated by Track A**, never generated — otherwise memory stops existing under `MOCK_LLM=1` |
 | Track A | Context multipliers, end-of-tick decay toward baseline, three observer tiers, belief formation, four-column headless output, correlation and flag-thrash checks, contributing-memories in the debug panel |
 | Track B | Rewritten: five-term retrieval, owner-filtered, prompt assembly carrying deltas and beliefs, hallucination check, relationship-bucketed fallbacks, cache keyed on the top-memory id |
@@ -534,4 +556,4 @@ For anyone holding an older copy. Two things merged here that had drifted into s
 
 **Kept from the multi-actor revision (the fork dropped all of it):** the world-sim design note, the cast of 5, multi-actor tick resolution with mid-tick precondition rechecks and deterministic ordering, `TickResult.log` / `ResolvedMove.witnessedByPlayer`, Track B's cost control for N autonomous actors, Track C's event feed, and the event-feed-noise risk.
 
-**Corrected against the code as it actually stands:** several items an earlier appendix listed as outstanding are already built — the four-axis inspector, delta-scoped animation, the event feed, and the 5-character fixture. The proposal to scope G1 down to one axis is overtaken. Conversely, `MOCK_LLM` is documented but unimplemented, `PendingUtterance` doesn't exist, `TickResult` sits in the frontend's file, and `claude/socialsim-relationships-memory.md` is not in the repo at all.
+**Corrected against the code as it actually stands (2026-08-28):** Parts 2–6 in `GAMEPLAY_TODO.md` are implemented and verified. `sim/` is the live engine; conversations, requests, obligations, relationship history/labels, beat memories, deterministic utility selection, decision traces, and UI presentation are built. Track B still has a richer type mirror; `determineObservers` is still a flat scene-wide stub; baseline decay, long-run Part 7 verification, and offline GA tuning are not built. `claude/socialsim-relationships-memory.md` is still absent.

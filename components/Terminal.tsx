@@ -5,7 +5,7 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import type { Move, MoveId, WorldFixture } from "@/lib/viewTypes";
 import { initState, reducer } from "@/lib/reducer";
 import { MENU_MOVE_IDS, metaFor } from "@/lib/moveMeta";
-import { runTick } from "@/lib/mockEngine";
+import { runSimTick } from "@/lib/simEngine";
 import { interpretInput } from "@/lib/interpret";
 import { postInterpret, postTurn } from "@/lib/api";
 import type { AiMode } from "@/lib/api";
@@ -135,12 +135,21 @@ export default function Terminal({ fixture }: Props) {
         setAiMode(mode);
         dispatch({ type: "applyResult", result });
       } else {
-        dispatch({ type: "applyResult", result: runTick(snapshot, playerId, move) });
+        dispatch({ type: "applyResult", result: runSimTick(snapshot, playerId, move) });
       }
     } catch {
       setAiMode("mock");
-      const result = runTick(snapshot, playerId, move);
-      dispatch({ type: "applyResult", result });
+      try {
+        const result = runSimTick(snapshot, playerId, move);
+        dispatch({ type: "applyResult", result });
+      } catch (error) {
+        dispatch({
+          type: "understood",
+          text: error instanceof Error ? error.message : "That move is not legal right now.",
+          ok: false,
+        });
+        dispatch({ type: "setBusy", busy: false });
+      }
     }
   }
 

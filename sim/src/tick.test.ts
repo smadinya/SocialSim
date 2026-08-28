@@ -10,10 +10,10 @@ function world(): WorldState {
     rngSeed: 7,
     scene: {
       location: "courtyard",
-      presentCharacters: ["you", "alice", "bob"],
+      presentCharacters: ["you", "alice", "bob", "dana"],
     },
     characters: Object.fromEntries(
-      ["you", "alice", "bob"].map((id) => [
+      ["you", "alice", "bob", "dana"].map((id) => [
         id,
         {
           id,
@@ -36,7 +36,7 @@ describe("multi-actor tick contracts", () => {
       world(),
       [
         { id: "Greet", actor: "you", target: "alice" },
-        { id: "Greet", actor: "bob", target: "alice" },
+        { id: "Greet", actor: "bob", target: "dana" },
       ],
       { playerId: "you" },
     );

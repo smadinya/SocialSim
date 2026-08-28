@@ -11,6 +11,7 @@ import {
   isKnownMoveId,
   moveNeedsTarget,
 } from "./catalog";
+import { activeConversationFor, isConversationAvailable } from "../conversations";
 
 export function getEligibleActors(world: WorldState): CharacterId[] {
   return world.scene.presentCharacters.filter((id) => {
@@ -53,9 +54,11 @@ export function getLegalMoves(
   actor: CharacterId,
   world: WorldState,
 ): Move[] {
-  if (!world.characters[actor]) return [];
+  if (!world.characters[actor] || !world.scene.presentCharacters.includes(actor)) return [];
 
-  const targets = Object.keys(world.characters).filter((id) => id !== actor);
+  const targets = world.scene.presentCharacters.filter(
+    (id) => id !== actor && Boolean(world.characters[id]),
+  );
   const candidates = MOVE_IDS.flatMap((id): Move[] =>
     moveNeedsTarget(id)
       ? targets.map((target) => ({ id, actor, target }))
@@ -75,7 +78,7 @@ export function isLegalMove(
 ): boolean {
   const actor = world.characters[move.actor];
 
-  if (!actor) {
+  if (!actor || !world.scene.presentCharacters.includes(move.actor)) {
     return false;
   }
 
@@ -84,12 +87,54 @@ export function isLegalMove(
   }
 
   if (moveNeedsTarget(move.id)) {
-    return Boolean(
+    if (!(
       move.target &&
       move.target !== move.actor &&
-      world.characters[move.target],
-    );
+      world.characters[move.target] &&
+      world.scene.presentCharacters.includes(move.target)
+    )) return false;
+
+    const canInterrupt = move.args?.interruptConversation === true;
+    if (!canInterrupt && (
+      !isConversationAvailable(world, move.actor, move.target) ||
+      !isConversationAvailable(world, move.target, move.actor)
+    )) return false;
+  } else if (move.target !== undefined) {
+    return false;
   }
 
-  return move.target === undefined;
+  const conversationId = typeof move.args?.conversationId === "string"
+    ? move.args.conversationId
+    : undefined;
+  if (conversationId) {
+    const conversation = world.conversations?.[conversationId];
+    if (!conversation || conversation.status !== "active" ||
+        !conversation.participants.includes(move.actor) ||
+        (move.target && !conversation.participants.includes(move.target))) return false;
+  }
+
+  const replyId = typeof move.args?.replyToRequestId === "string"
+    ? move.args.replyToRequestId
+    : undefined;
+  if (replyId) {
+    const request = world.socialRequests?.[replyId];
+    if (!request || request.recipient !== move.actor ||
+        !["pending", "clarification_requested", "delayed", "accepted"].includes(request.status) ||
+        !["Comply", "Refuse", "Ask", "Wait", "Help"].includes(move.id) ||
+        (move.id !== "Wait" && move.target !== request.requester)) return false;
+  }
+
+  const withdrawId = typeof move.args?.requestId === "string"
+    ? move.args.requestId
+    : undefined;
+  if (withdrawId) {
+    const request = world.socialRequests?.[withdrawId];
+    if (move.id !== "Withdraw" || !request || request.requester !== move.actor ||
+        !["pending", "clarification_requested", "delayed"].includes(request.status)) return false;
+  }
+
+  const active = activeConversationFor(world, move.actor);
+  if (move.target && active && !active.participants.includes(move.target) &&
+      move.args?.interruptConversation !== true) return false;
+  return true;
 }

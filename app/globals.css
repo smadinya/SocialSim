@@ -166,6 +166,36 @@ body {
   margin-bottom: 12px;
 }
 
+.scene-context {
+  border: 1px solid var(--edge-bright);
+  border-left: 3px solid var(--amber-dim);
+  padding: 8px 10px;
+  margin-bottom: 14px;
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.scene-context b {
+  color: var(--amber);
+  font-weight: 400;
+}
+
+.context-meta {
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.request-badge,
+.rel-flag {
+  display: inline-block;
+  margin: 6px 5px 0 0;
+  padding: 1px 6px;
+  border: 1px solid var(--amber-faint);
+  color: var(--amber-dim);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
 .scene-line .who {
   color: var(--amber-dim);
   text-transform: uppercase;
@@ -409,6 +439,24 @@ body {
   color: var(--ink);
   display: flex;
   justify-content: space-between;
+}
+
+.rel-labels {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  color: var(--amber-dim);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.rel-previous {
+  color: var(--muted);
+}
+
+.rel-labels .rel-flag {
+  margin-top: 0;
 }
 
 .rel-bars {

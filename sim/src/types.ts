@@ -19,6 +19,8 @@ export type RelationshipAxis = (typeof RELATIONSHIP_AXES)[number];
 export type ConversationStatus = "active" | "paused" | "ended";
 export type SocialRequestStatus =
   | "pending"
+  | "clarification_requested"
+  | "delayed"
   | "accepted"
   | "refused"
   | "fulfilled"
@@ -80,6 +82,21 @@ export interface SocialRequest {
   resolutionEventId?: string;
 }
 
+export type SocialObligationStatus = "active" | "fulfilled" | "failed";
+
+/** Accepting a request creates an obligation; fulfilling it is a later fact. */
+export interface SocialObligation {
+  id: string;
+  requestId: SocialRequestId;
+  debtor: CharacterId;
+  creditor: CharacterId;
+  subject: string;
+  createdTurn: number;
+  status: SocialObligationStatus;
+  resolvedTurn?: number;
+  resolutionEventId?: string;
+}
+
 export interface Relationship {
   trust: number;
   affection: number;
@@ -97,6 +114,21 @@ export interface RelationshipState extends Relationship {
   anger?: number;
   jealousy?: number;
   hate?: number;
+  baseline?: RelationshipValues;
+  lastDelta?: Partial<Record<RelationshipAxis, number>>;
+  flags?: string[];
+  history?: RelationshipHistoryEntry[];
+}
+
+export interface RelationshipHistoryEntry {
+  turn: number;
+  eventId: string;
+  moveId: MoveId;
+  field: RelationshipAxis;
+  before: number;
+  after: number;
+  labelsBefore: string[];
+  labelsAfter: string[];
 }
 
 /** All axes after a fixture/save has passed through relationship normalization. */
@@ -112,6 +144,11 @@ export interface Memory {
   description: string;
   tags: string[];
   importance: number;
+  eventId?: string;
+  conversationId?: ConversationId;
+  tier?: "direct" | "overheard" | "told";
+  valence?: number;
+  accurate?: boolean;
 }
 
 export interface Belief {
@@ -144,6 +181,10 @@ export interface Character {
 export interface SceneState {
   location: string;
   presentCharacters: CharacterId[];
+  departures?: Record<CharacterId, {
+    returnTurn: number;
+    location: string;
+  }>;
 }
 
 export interface WorldState {
@@ -160,6 +201,7 @@ export interface WorldState {
    */
   conversations?: Record<ConversationId, Conversation>;
   socialRequests?: Record<SocialRequestId, SocialRequest>;
+  obligations?: Record<string, SocialObligation>;
 
   rngSeed: number;
 }
@@ -197,6 +239,27 @@ export interface RelationshipDelta {
   after: number;
 }
 
+export type BehaviorBranch =
+  | "danger"
+  | "reply"
+  | "conversation"
+  | "obligation"
+  | "reaction"
+  | "goal"
+  | "social-approach"
+  | "idle";
+
+export interface DecisionTrace {
+  actor: CharacterId;
+  branch: BehaviorBranch;
+  selected?: Move;
+  score: number;
+  reasons: string[];
+  contributingMemories: string[];
+  rejectedConflicts: string[];
+  alternatives: Array<{ move: Move; score: number }>;
+}
+
 /** Track B realizes these deterministic facts as dialogue. */
 export interface PendingUtterance {
   speaker: CharacterId;
@@ -227,4 +290,5 @@ export interface TickResult {
   /** Track C compatibility until it renders realized pending utterances. */
   utterances: Utterance[];
   eligibleActors: CharacterId[];
+  decisionTraces?: DecisionTrace[];
 }

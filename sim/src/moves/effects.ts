@@ -5,6 +5,7 @@ import type {
   WorldState,
 } from "../types";
 import type { KnownMoveId } from "./catalog";
+import { recordRelationshipChange } from "../relationships";
 
 export interface RelationshipEffect {
   field: RelationshipAxis;
@@ -39,6 +40,11 @@ export const MOVE_EFFECTS: Record<KnownMoveId, RelationshipEffect[]> = {
     { field: "gratitude", amount: 8, onTarget: true },
     { field: "affection", amount: 7, onTarget: true },
     { field: "respect", amount: 5, onTarget: true },
+  ],
+  Help: [
+    { field: "gratitude", amount: 9, onTarget: true },
+    { field: "trust", amount: 6, onTarget: true },
+    { field: "respect", amount: 4, onTarget: true },
   ],
   GiveGift: [
     { field: "gratitude", amount: 7, onTarget: true },
@@ -99,6 +105,7 @@ function clampAxis(value: number): number {
 export function applyMoveEffects(
   world: WorldState,
   move: Move,
+  cause?: { eventId: string; turn: number },
 ): RelationshipDelta[] {
   const deltas: RelationshipDelta[] = [];
   const effects = MOVE_EFFECTS[move.id as KnownMoveId] ?? [];
@@ -116,6 +123,16 @@ export function applyMoveEffects(
     relationship[effect.field] = after;
 
     if (before !== after) {
+      if (cause) {
+        recordRelationshipChange(relationship, {
+          turn: cause.turn,
+          eventId: cause.eventId,
+          moveId: move.id,
+          field: effect.field,
+          before,
+          after,
+        });
+      }
       deltas.push({
         sourceActor: move.actor,
         from: owner,

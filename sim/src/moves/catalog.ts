@@ -8,6 +8,7 @@ export const MOVE_IDS = [
   "Comfort",
   "Comply",
   "Defend",
+  "Help",
   "GiveGift",
   "Flirt",
   "Propose",  
