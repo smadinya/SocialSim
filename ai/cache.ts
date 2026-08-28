@@ -27,6 +27,9 @@ export function cacheKey(u: PendingUtterance): string {
   const axes = REL_FIELDS.map((f: RelationshipAxis) => bucket(rel[f])).join("/");
   const top = u.retrievedMemories[0];
   const topMemory = top ? [...top.tags].sort().join(",") : "none";
+  const request = u.requestContext
+    ? `${u.requestContext.requesterName}:${u.requestContext.subject}:${u.requestContext.aboutName ?? "none"}`
+    : "none";
   return [
     u.speaker,
     u.move.id,
@@ -34,6 +37,7 @@ export function cacheKey(u: PendingUtterance): string {
     u.mood,
     axes,
     topMemory,
+    request,
   ].join("|");
 }
 

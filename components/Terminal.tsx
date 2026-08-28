@@ -10,6 +10,7 @@ import { interpretInput } from "@/lib/interpret";
 import { postInterpret, postTurn } from "@/lib/api";
 import type { AiMode } from "@/lib/api";
 import { MOVE_IDS } from "@sim/moves/catalog";
+import { linkMoveToPlayerRequest } from "@/lib/requestMoves";
 import {
   clearSession,
   exportSession,
@@ -61,15 +62,27 @@ export default function Terminal({ fixture }: Props) {
   stateRef.current = state;
 
   const present = state.world.scene.presentCharacters;
+  // Player-targeted moves are submitted with `interruptConversation: true`
+  // by runSimTick. Filtering through generic NPC legality here hid characters
+  // who were already talking, even though the engine permits that interruption.
+  const actionMoves = present.includes(playerId) ? MENU_MOVE_IDS : [];
   const targets = present
     .filter((id) => id !== playerId)
     .map((id) => ({ id, name: state.world.characters[id].name }));
 
   useEffect(() => {
-    if (selectedTarget === null &&  targets.length > 0) {
-      setSelectedTarget(targets[0].id);
+    if (actionMoves.length > 0 && !actionMoves.includes(selectedMove)) {
+      setSelectedMove(actionMoves[0]);
     }
-  }, [selectedTarget, targets]);
+  }, [actionMoves, selectedMove]);
+
+  useEffect(() => {
+    if (metaFor(selectedMove).needsTarget) {
+      if (!targets.some((target) => target.id === selectedTarget)) {
+        setSelectedTarget(targets[0]?.id ?? null);
+      }
+    }
+  }, [selectedMove, selectedTarget, targets]);
 
   // No autosave: it wrote the manual slot on every state change and nothing
   // read it at boot (`initState` always takes the fixture), so its only
@@ -127,20 +140,21 @@ export default function Terminal({ fixture }: Props) {
   }, [state.pending]);
 
   async function performMove(move: Move) {
-    dispatch({ type: "beginTurn", move });
     const snapshot = stateRef.current.world;
+    const linkedMove = linkMoveToPlayerRequest(move, snapshot, playerId);
+    dispatch({ type: "beginTurn", move: linkedMove });
     try {
       if (useServer) {
-        const { result, mode } = await postTurn(snapshot, playerId, move);
+        const { result, mode } = await postTurn(snapshot, playerId, linkedMove);
         setAiMode(mode);
         dispatch({ type: "applyResult", result });
       } else {
-        dispatch({ type: "applyResult", result: runSimTick(snapshot, playerId, move) });
+        dispatch({ type: "applyResult", result: runSimTick(snapshot, playerId, linkedMove) });
       }
     } catch {
       setAiMode("mock");
       try {
-        const result = runSimTick(snapshot, playerId, move);
+        const result = runSimTick(snapshot, playerId, linkedMove);
         dispatch({ type: "applyResult", result });
       } catch (error) {
         dispatch({
@@ -197,7 +211,6 @@ export default function Terminal({ fixture }: Props) {
   }
 
   const commitRef = useCallbackRef(commit);
-  const selectMoveRef = useCallbackRef(selectMove);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -206,20 +219,14 @@ export default function Terminal({ fixture }: Props) {
       if (tag === "INPUT" || tag === "TEXTAREA") return;
       if (stateRef.current.busy) return;
 
-      if (e.key >= "1" && e.key <= "9") {
-        const idx = parseInt(e.key, 10) - 1;
-        if (idx < MENU_MOVE_IDS.length) {
-          e.preventDefault();
-          selectMoveRef.current(MENU_MOVE_IDS[idx]);
-        }
-      } else if (e.key === "Enter") {
+      if (e.key === "Enter") {
         e.preventDefault();
         commitRef.current();
       }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [commitRef, selectMoveRef]);
+  }, [commitRef]);
 
   function doLoad() {
     const loaded = loadSession();
@@ -286,7 +293,7 @@ export default function Terminal({ fixture }: Props) {
         <SceneView scene={state.scene} world={state.world} playerId={playerId} />
 
         <ActionMenu
-          moves={MENU_MOVE_IDS}
+          moves={actionMoves}
           selectedMove={selectedMove}
           onSelectMove={selectMove}
           targets={targets}

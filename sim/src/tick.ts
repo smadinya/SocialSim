@@ -94,7 +94,12 @@ export function resolveTick(
     applyRequestMove(next, move, event, conversation?.id);
     promoteConversationBeat(next, move, event, conversation);
 
-    if (move.id === "Withdraw") {
+    const leavesScene = move.id === "Withdraw" ||
+      (move.id === "Help" && move.actor !== options.playerId) ||
+      (move.id === "AskForHelp" &&
+        move.actor !== options.playerId &&
+        move.target === options.playerId);
+    if (leavesScene) {
       const active = activeConversationFor(next, move.actor);
       if (active) endConversation(next, active.id);
       next.scene.presentCharacters = next.scene.presentCharacters.filter(
@@ -107,13 +112,17 @@ export function resolveTick(
     }
 
     events.push(event);
-    if (move.id === "Withdraw") {
+    if (leavesScene) {
       events.push({
         id: `${event.id}-departure`,
         turn: event.turn,
         type: "departure",
         actor: move.actor,
-        description: `${next.characters[move.actor].name} left the scene and will return in five turns.`,
+        description: move.id === "AskForHelp"
+          ? `${next.characters[move.actor].name} asked for help, then left the scene for five turns.`
+          : move.id === "Help"
+            ? `${next.characters[move.actor].name} left to provide help and will return in five turns.`
+            : `${next.characters[move.actor].name} left the scene and will return in five turns.`,
         OnScene: [...event.OnScene],
       });
     }

@@ -113,6 +113,13 @@ export function toneFor(u: PendingUtterance): ToneBucket {
 }
 
 export function fallbackLine(u: PendingUtterance): string {
+  if (u.move.id === "Ask" && u.requestContext) {
+    const { requesterName, subject } = u.requestContext;
+    const normalizedSubject = subject.trim().toLowerCase();
+    return normalizedSubject && normalizedSubject !== "help"
+      ? `What exactly do you need me to do about ${subject}, ${requesterName}?`
+      : `What kind of help do you need, ${requesterName}?`;
+  }
   const table = FALLBACK_LINES[toneFor(u)] ?? FALLBACK_LINES.neutral;
   const template = table[u.move.id as MoveId] ?? "{target}...";
   return template

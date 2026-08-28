@@ -149,14 +149,53 @@ describe("requests and obligations", () => {
     expect(accepted.socialRequests?.[request.id].status).toBe("accepted");
     expect(accepted.obligations?.[`obligation-${request.id}`].status).toBe("active");
 
-    const fulfilled = resolveTick(accepted, [{
+    const fulfilledResult = resolveTick(accepted, [{
       id: "Help",
       actor: "bob",
       target: "alice",
       args: { replyToRequestId: request.id, conversationId: request.conversationId },
-    }]).state;
+    }]);
+    const fulfilled = fulfilledResult.state;
     expect(fulfilled.socialRequests?.[request.id].status).toBe("fulfilled");
     expect(fulfilled.obligations?.[`obligation-${request.id}`].status).toBe("fulfilled");
+    expect(fulfilled.scene.presentCharacters).not.toContain("bob");
+    expect(fulfilled.scene.departures?.bob.returnTurn).toBe(8);
+    expect(fulfilledResult.events.some((event) =>
+      event.type === "departure" && event.actor === "bob"
+    )).toBe(true);
+  });
+
+  it("schedules an NPC who asks for help to leave for five turns", () => {
+    const result = resolveTick(
+      world(),
+      [{ id: "AskForHelp", actor: "alice", target: "you" }],
+      { playerId: "you" },
+    );
+    expect(result.state.scene.presentCharacters).not.toContain("alice");
+    expect(result.state.scene.departures?.alice.returnTurn).toBe(6);
+    expect(Object.values(result.state.socialRequests ?? {})[0].status).toBe("pending");
+    expect(result.events.some((event) => event.type === "departure" && event.actor === "alice"))
+      .toBe(true);
+  });
+
+  it("keeps Robin present when the player asks for help", () => {
+    const result = resolveTick(
+      world(),
+      [{ id: "AskForHelp", actor: "you", target: "alice" }],
+      { playerId: "you" },
+    );
+    expect(result.state.scene.presentCharacters).toContain("you");
+    expect(result.state.scene.departures?.you).toBeUndefined();
+  });
+
+  it("keeps the player present when they provide help", () => {
+    const result = resolveTick(
+      world(),
+      [{ id: "Help", actor: "you", target: "alice" }],
+      { playerId: "you" },
+    );
+    expect(result.state.scene.presentCharacters).toContain("you");
+    expect(result.state.scene.departures?.you).toBeUndefined();
   });
 });
 
@@ -217,6 +256,7 @@ describe("deterministic behavior selection", () => {
     expect(first.traces[0].branch).toBe("reply");
     expect(first.traces[0].reasons.length).toBeGreaterThan(0);
     expect(first.moves[0].args?.replyToRequestId).toBe("request-1");
+    expect(first.traces[0].alternatives.map((item) => item.move.id)).not.toContain("Ask");
   });
 
   it("supports every explicit request outcome transition", () => {

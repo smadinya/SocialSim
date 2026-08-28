@@ -60,6 +60,13 @@ export interface Belief {
   sourceMemoryId?: string;
 }
 
+export interface RequestDialogueContext {
+  requestId: string;
+  requesterName: string;
+  subject: string;
+  aboutName?: string;
+}
+
 export interface PendingUtterance {
   speaker: CharacterId;
   move: Move;
@@ -79,6 +86,8 @@ export interface PendingUtterance {
   targetName?: string;
   /** The third party in "tell X about Y" — talked about, never addressed. */
   subjectName?: string;
+  /** The persistent request this move answers, if it is a linked reply. */
+  requestContext?: RequestDialogueContext;
   /** Every character name in the world. The hallucination check tests these
    *  against the prompt that was actually sent — a name the prompt never
    *  mentioned is one the speaker cannot know. */

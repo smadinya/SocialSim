@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import type { SceneLine } from "@/lib/reducer";
 import type { WorldState } from "@/lib/viewTypes";
+import { openRequestsForPlayer } from "@/lib/requestMoves";
 
 interface Props {
   scene: SceneLine[];
@@ -24,11 +25,7 @@ export default function SceneView({ scene, world, playerId }: Props) {
   const conversation = Object.values(world.conversations ?? {}).find(
     (item) => item.status === "active" && item.participants.includes(playerId),
   ) ?? Object.values(world.conversations ?? {}).find((item) => item.status === "active");
-  const pendingRequests = conversation
-    ? conversation.pendingRequestIds
-        .map((id) => world.socialRequests?.[id])
-        .filter((request) => request && !["fulfilled", "failed", "refused", "withdrawn"].includes(request.status))
-    : [];
+  const openRequests = openRequestsForPlayer(world, playerId);
   const participantNames = conversation?.participants
     .map((id) => id === playerId ? "You" : world.characters[id]?.name ?? id)
     .join(" ↔ ");
@@ -44,20 +41,42 @@ export default function SceneView({ scene, world, playerId }: Props) {
         <span>Scene · {world.scene.location}</span>
         <span style={{ color: "var(--muted)" }}>{present}</span>
       </div>
-      <div className="panel-body" ref={bodyRef}>
-        {conversation && (
-          <div className="scene-context">
+      {(conversation || openRequests.length > 0) && (
+        <div className="scene-context">
+          {conversation && (
+            <div className="conversation-summary">
             <div><b>{participantNames}</b> · {conversation.primaryTopic.summary}</div>
             <div className="context-meta">
               next: {expectedName ?? "open"} · {conversation.summary}
             </div>
-            {pendingRequests.map((request) => request && (
-              <span className="request-badge" key={request.id}>
-                {request.status}: {request.subject}
-              </span>
-            ))}
-          </div>
-        )}
+            </div>
+          )}
+          {openRequests.length > 0 && (
+            <div className="request-stack" aria-label="Open requests">
+              {openRequests.map((request) => {
+                const inbound = request.recipient === playerId;
+                const otherId = inbound ? request.requester : request.recipient;
+                const otherName = world.characters[otherId]?.name ?? otherId;
+                const resolution = inbound
+                  ? request.status === "accepted"
+                    ? "Close with Help"
+                    : "Close with Refuse or Help"
+                  : "Closes when answered, fulfilled, or expired";
+                return (
+                  <div className="request-banner" key={request.id}>
+                    <span className="request-label">Open request</span>
+                    <span>
+                      {inbound ? `${otherName} → You` : `You → ${otherName}`}: {request.subject}
+                    </span>
+                    <span className="request-state">{request.status} · {resolution}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+      <div className="panel-body scene-history" ref={bodyRef}>
         {scene.map((line) => (
           <div
             key={line.id}

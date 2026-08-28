@@ -66,6 +66,32 @@ describe("fallbacks", () => {
       expect(fallbackLine(pending("alice", id, "dana"))).not.toContain("{subject}");
     }
   });
+
+  it("makes a request clarification refer to the help that was requested", () => {
+    const state = structuredClone(world);
+    state.socialRequests = {
+      "request-1": {
+        id: "request-1",
+        conversationId: "conversation-1",
+        requester: "you",
+        recipient: "alice",
+        subject: "help",
+        createdTurn: state.turn,
+        importance: 0.8,
+        status: "pending",
+      },
+    };
+    const utterance = toPendingUtterance(state, {
+      move: {
+        id: "Ask",
+        actor: "alice",
+        target: "you",
+        args: { replyToRequestId: "request-1" },
+      },
+      witnessedByPlayer: true,
+    });
+    expect(fallbackLine(utterance)).toBe("What kind of help do you need, You?");
+  });
 });
 
 describe("realize", () => {

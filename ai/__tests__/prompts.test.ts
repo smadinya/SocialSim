@@ -84,6 +84,36 @@ describe("prompt assembly", () => {
     expect(promptFor("alice", "Confront", "bob")).toContain("betrayed");
   });
 
+  it("carries the original help request into a clarification reply", () => {
+    const state = structuredClone(world);
+    state.socialRequests = {
+      "request-1": {
+        id: "request-1",
+        conversationId: "conversation-1",
+        requester: "you",
+        recipient: "alice",
+        subject: "find the missing key",
+        createdTurn: state.turn,
+        importance: 0.8,
+        status: "pending",
+      },
+    };
+    const utterance = toPendingUtterance(state, {
+      move: {
+        id: "Ask",
+        actor: "alice",
+        target: "you",
+        args: { replyToRequestId: "request-1" },
+      },
+      witnessedByPlayer: true,
+    });
+    const prompt = realizePrompt(utterance);
+    expect(utterance.requestContext?.subject).toBe("find the missing key");
+    expect(prompt).toContain("THE HELP REQUEST THIS MOVE ANSWERS:");
+    expect(prompt).toContain("find the missing key");
+    expect(prompt).toContain("do not introduce a new topic");
+  });
+
   it("never takes a WorldState — there is nothing to reach into", () => {
     expect(realizePrompt.length).toBe(1);
   });

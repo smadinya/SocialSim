@@ -100,6 +100,12 @@ export function toPendingUtterance(
   const speaker = world.characters[move.actor];
   const memories = (speaker?.memories ?? []).map(toMemory);
   const retrieved = retrieve(memories, move, move.actor, world.turn);
+  const replyToRequestId = typeof move.args?.replyToRequestId === "string"
+    ? move.args.replyToRequestId
+    : undefined;
+  const request = replyToRequestId
+    ? world.socialRequests?.[replyToRequestId]
+    : undefined;
 
   return {
     speaker: move.actor,
@@ -120,6 +126,14 @@ export function toPendingUtterance(
     // doesn't read it yet, so this is the only place it has an effect: the
     // speaker's line is about the right person.
     subjectName: nameOf(world, move.args?.subject as CharacterId | undefined),
+    requestContext: request
+      ? {
+          requestId: request.id,
+          requesterName: nameOf(world, request.requester) ?? request.requester,
+          subject: request.subject,
+          aboutName: nameOf(world, request.about),
+        }
+      : undefined,
     castNames: Object.keys(world.characters)
       .filter((id) => id !== move.actor)
       .map((id) => world.characters[id].name),

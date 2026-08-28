@@ -167,10 +167,11 @@ body {
 }
 
 .scene-context {
-  border: 1px solid var(--edge-bright);
+  flex: 0 0 auto;
+  border-bottom: 1px solid var(--edge-bright);
   border-left: 3px solid var(--amber-dim);
-  padding: 8px 10px;
-  margin-bottom: 14px;
+  padding: 9px 12px;
+  background: #11150f;
   color: var(--ink);
   font-size: 12px;
 }
@@ -183,6 +184,41 @@ body {
 .context-meta {
   color: var(--muted);
   margin-top: 3px;
+}
+
+.request-stack {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.conversation-summary + .request-stack {
+  padding-top: 8px;
+  border-top: 1px solid var(--edge);
+}
+
+.request-banner {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr) max-content;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 8px;
+  border: 1px solid var(--amber-faint);
+  background: #1b170d;
+  color: var(--ink);
+}
+
+.request-label,
+.request-state {
+  color: var(--amber-dim);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.request-state {
+  color: var(--muted);
+  text-align: right;
 }
 
 .request-badge,
@@ -235,11 +271,25 @@ body {
 
 .menu {
   grid-area: menu;
+  max-height: 44vh;
+}
+
+.action-menu-body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.action-options-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .menu-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -255,6 +305,7 @@ body {
   display: flex;
   gap: 10px;
   align-items: baseline;
+  min-width: 0;
 }
 
 .menu-item:hover,
@@ -263,9 +314,11 @@ body {
   background: rgba(242, 181, 68, 0.06);
 }
 
-.menu-item .key {
-  color: var(--amber);
-  min-width: 14px;
+.menu-item.wait-action {
+  justify-content: center;
+  padding-block: 10px;
+  border-color: var(--edge-bright);
+  color: var(--amber-dim);
 }
 
 .menu-item:disabled {
@@ -305,9 +358,11 @@ body {
 }
 
 .custom {
-  margin-top: 12px;
+  flex: 0 0 auto;
+  margin-top: 10px;
   border-top: 1px solid var(--edge);
   padding-top: 10px;
+  background: var(--panel);
 }
 
 .custom-row {
@@ -600,5 +655,18 @@ body {
       "menu"
       "inspector"
       "feed";
+  }
+
+  .menu {
+    max-height: none;
+  }
+
+  .request-banner {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .request-state {
+    text-align: left;
   }
 }

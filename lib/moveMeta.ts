@@ -1,4 +1,5 @@
 import type { MoveId, RelationshipField } from "./viewTypes";
+import { MOVE_IDS } from "@sim/moves/catalog";
 
 export interface MoveMeta {
   id: MoveId;
@@ -35,19 +36,9 @@ export const MOVE_META: Record<string, MoveMeta> = {
   Wait: { id: "Wait", label: "Wait", needsTarget: false, blurb: "Let the moment pass." },
 };
 
-// `Withdraw` is deliberately absent: it removes the actor from the scene
-// (`lib/mockEngine.ts`), and there is nowhere for the player to go and no rule
-// that brings them back, so offering it to them would stall the game. NPCs
-// still use it, and `Wait` covers "let a turn pass". Restore it when scenes
-// are somewhere you can move between.
-export const MENU_MOVE_IDS: MoveId[] = [
-  "Greet",
-  "Confront",
-  "GiveGift",
-  "AskForHelp",
-  "Defend",
-  "Wait",
-];
+// Every playable catalog action is visible. Withdraw remains NPC-only because
+// an off-scene player cannot submit the intervening turns needed to return.
+export const MENU_MOVE_IDS: MoveId[] = MOVE_IDS.filter((id) => id !== "Withdraw");
 
 export function metaFor(id: MoveId): MoveMeta {
   return (

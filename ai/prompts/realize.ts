@@ -33,6 +33,7 @@ function memoryLine(m: Memory): string {
 
 export function realizePrompt(u: PendingUtterance): string {
   const target = u.targetName;
+  const requestContext = u.requestContext;
   const memories = u.retrievedMemories.length
     ? u.retrievedMemories.map(memoryLine).join("\n")
     : "- (nothing relevant comes to mind)";
@@ -67,6 +68,21 @@ export function realizePrompt(u: PendingUtterance): string {
     `THE MOVE: ${u.move.id}${target ? ` toward ${target}` : ""} (turn ${u.turn})`,
     ...(u.subjectName
       ? [`ABOUT: ${u.subjectName} — they are being talked about, not addressed.`]
+      : []),
+    ...(requestContext
+      ? [
+          "",
+          "THE HELP REQUEST THIS MOVE ANSWERS:",
+          `${requestContext.requesterName} asked for help with: ${requestContext.subject}`,
+          ...(requestContext.aboutName
+            ? [`THE REQUEST CONCERNS: ${requestContext.aboutName}`]
+            : []),
+          ...(u.move.id === "Ask"
+            ? [
+                "This Ask is a clarification of that help request. Ask only what help is needed; do not introduce a new topic.",
+              ]
+            : ["Respond directly to that help request; do not introduce a new topic."]),
+        ]
       : []),
     "",
     "Write what they say out loud. Constraints:",

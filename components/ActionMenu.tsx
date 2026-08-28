@@ -37,57 +37,72 @@ export default function ActionMenu({
   onCustom,
 }: Props) {
   const needsTarget = metaFor(selectedMove).needsTarget;
+  const regularMoves = moves.filter((id) => id !== "Wait");
+  const columnCount = 3;
+  const rowCount = Math.ceil(regularMoves.length / columnCount);
 
   return (
     <section className="panel menu">
       <div className="panel-head">
         <span>Actions</span>
-        <span style={{ color: "var(--muted)" }}>press 1–{moves.length}</span>
+        <span style={{ color: "var(--muted)" }}>{moves.length} available</span>
       </div>
-      <div className="panel-body">
-        <div className="menu-grid">
-          {moves.map((id, i) => {
-            const meta = metaFor(id);
-            return (
-              <button
-                key={id}
-                className={`menu-item ${id === selectedMove ? "active" : ""}`}
-                disabled={busy}
-                onClick={() => onSelectMove(id)}
-              >
-                <span className="key">{i + 1}</span>
-                <span>{meta.label}</span>
+      <div className="panel-body action-menu-body">
+        <div className="action-options-scroll">
+          <div className="menu-grid">
+            {moves.map((id) => {
+              const meta = metaFor(id);
+              const regularIndex = regularMoves.indexOf(id);
+              const position = id === "Wait"
+                ? { gridColumn: "1 / -1", gridRow: rowCount + 1 }
+                : {
+                    gridColumn: Math.floor(regularIndex / rowCount) + 1,
+                    gridRow: (regularIndex % rowCount) + 1,
+                  };
+              return (
+                <button
+                  key={id}
+                  className={`menu-item ${id === "Wait" ? "wait-action" : ""} ${
+                    id === selectedMove ? "active" : ""
+                  }`}
+                  disabled={busy}
+                  onClick={() => onSelectMove(id)}
+                  title={meta.blurb}
+                  style={position}
+                >
+                  <span>{meta.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {needsTarget && (
+            <div className="target-row">
+              <span className="lbl">on</span>
+              {targets.map((t) => (
+                <button
+                  key={t.id}
+                  className={`chip ${t.id === selectedTarget ? "active" : ""}`}
+                  disabled={busy}
+                  onClick={() => onSelectTarget(t.id)}
+                >
+                  {t.name}
+                </button>
+              ))}
+              <button className="chip" disabled={busy} onClick={onCommit}>
+                Execute ▸
               </button>
-            );
-          })}
+            </div>
+          )}
+
+          {!needsTarget && (
+            <div className="target-row">
+              <button className="chip" disabled={busy} onClick={onCommit}>
+                Execute ▸
+              </button>
+            </div>
+          )}
         </div>
-
-        {needsTarget && (
-          <div className="target-row">
-            <span className="lbl">on</span>
-            {targets.map((t) => (
-              <button
-                key={t.id}
-                className={`chip ${t.id === selectedTarget ? "active" : ""}`}
-                disabled={busy}
-                onClick={() => onSelectTarget(t.id)}
-              >
-                {t.name}
-              </button>
-            ))}
-            <button className="chip" disabled={busy} onClick={onCommit}>
-              Execute ▸
-            </button>
-          </div>
-        )}
-
-        {!needsTarget && (
-          <div className="target-row">
-            <button className="chip" disabled={busy} onClick={onCommit}>
-              Execute ▸
-            </button>
-          </div>
-        )}
 
         <CustomActionInput
           busy={busy}

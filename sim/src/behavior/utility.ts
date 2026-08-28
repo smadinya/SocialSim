@@ -123,7 +123,15 @@ function branchCandidates(
 
   const request = pendingRequestFor(world, actor);
   if (request) {
-    const moves: Move[] = ["Comply", "Refuse", "Ask", "Wait"].map((id) => ({
+    const subject = request.subject.trim().toLowerCase();
+    const needsClarification = subject.length === 0 || subject === "help";
+    const replyMoves = [
+      "Comply",
+      "Refuse",
+      ...(needsClarification ? ["Ask"] : []),
+      "Wait",
+    ];
+    const moves: Move[] = replyMoves.map((id) => ({
       id,
       actor,
       target: id === "Wait" ? undefined : request.requester,
