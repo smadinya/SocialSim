@@ -20,16 +20,22 @@ export default function RelationshipMap({ world, onPick, onClose }: Props) {
 
   return (
     <div className="overlay" onClick={onClose}>
-      <div className="map" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="map"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="whos-who-title"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="panel-head">
-          <span>Who&apos;s who</span>
+          <span id="whos-who-title">Who&apos;s who</span>
           <span style={{ color: "var(--muted)" }}>rows feel · columns are felt about</span>
         </div>
         <div className="map-body">
           <table className="map-grid">
             <thead>
               <tr>
-                <th />
+                <th aria-label="Character" />
                 {ids.map((id) => (
                   <th key={id}>{world.characters[id].name}</th>
                 ))}
