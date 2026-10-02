@@ -39,6 +39,9 @@ export function promoteConversationBeat(
       tier: direct ? "direct" : "overheard",
       valence: 0,
       accurate: true,
+      // A conversation beat is not by itself a MAJOR event, so it stays
+      // subject to the memory cap and to decay like anything else.
+      core: false,
     });
     character.memories.sort((a, b) => b.importance - a.importance || b.turn - a.turn);
     character.memories = character.memories.slice(0, 30);

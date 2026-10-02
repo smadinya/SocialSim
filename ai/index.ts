@@ -4,4 +4,4 @@ export { interpret } from "@ai/interpret";
 export { toPendingUtterance } from "@ai/adapt";
 export { beginTick, endTick, mockMode, worstTick } from "@ai/client";
 export type { TickCost } from "@ai/client";
-export type { PendingUtterance, RealizedLine } from "@ai/types";
+export type { PendingUtterance, RealizedLine } from "@sim/types";

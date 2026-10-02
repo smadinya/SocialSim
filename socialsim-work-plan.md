@@ -32,11 +32,22 @@ Everything below this section is the target. This is the ground truth, so nobody
 | Track | State |
 |---|---|
 | **C — Frontend** | Effectively at G1. Four panels including the event feed, streaming dialogue, animated relationship deltas, save/load/export/import, keyboard nav, free-text input with an "I understood that as" confirmation. Renders with the server off. |
-| **A — Simulation core** | Now load-bearing for the live route and local fallback. It owns normalized conversation/request/obligation state, participant reservations, relationship history/labels, observer-scoped beat memories, deterministic priority-plus-utility NPC selection, decision traces, and complete move effects including `Help`. Observer tiers, baseline decay, long-run verification, and offline GA tuning remain outstanding. |
-| **B — AI integration** | Active. `@google/genai`, Zod validation, mock mode, prompts, retrieval, relationship-bucketed fallbacks, caching, retry/failure handling, interpretation, route-side realization, and tests exist. Track B still owns a temporary prompt-contract mirror in `ai/types.ts`; it has not fully migrated to Track A's shared contracts. |
+| **A — Simulation core** | Real and tested, not yet load-bearing. It owns normalized conversation/request/obligation state, participant reservations, relationship history/labels, observer-scoped beat memories, deterministic priority-plus-utility NPC selection, decision traces, and complete move effects including `Help`. What still blocks it from taking the live route: `sim/tick` advances `turn` only — it does not spend a `slot`, move anyone between `locations`, open or close a `thread`, or advance the scenario `phase`. Observer tiers, baseline decay, long-run verification, and offline GA tuning also remain outstanding. |
+| **B — AI integration** | Active. `@google/genai`, Zod validation, mock mode, prompts, retrieval, relationship-bucketed fallbacks, caching, retry/failure handling, interpretation, route-side realization, and tests exist. The temporary prompt-contract mirror in `ai/types.ts` is gone: `ai/` imports the shared contract from `@sim/types` directly. |
 | **D — Content & design** | 5-character fixture with eight relationship axes, an expanded action catalog including `Help`, a scenario, and three-tone fallback dialogue tables exist. Observer tiers, authored memory templates, context multipliers, authored baselines/flags, and GA fitness/tuning data remain outstanding. |
 
-**The engine you are playing is now `sim/`.** `lib/simEngine.ts` adapts its result for the UI, and `/api/turn` adds Track B dialogue realization. `lib/mockEngine.ts` remains as regression/reference code but is no longer used by the live route or local UI fallback.
+**The engine you are playing is still `lib/mockEngine.ts`.** Both paths run it —
+`/api/turn` (which adds Track B dialogue realization on top) and the local UI
+fallback — so `server: on/off` produces the same result either way, which is
+what the README promises.
+
+`lib/simEngine.ts` is the adapter that will swap `sim/` in, and it is ready for
+the day `sim/tick` can carry the update-1 loop. It cannot yet: it advances
+`turn` and leaves `slot`, `locations`, `threads` and `phase` untouched, so
+routing the game through it makes every move free, empties the scene of
+conversations, and parks the scenario in `suspicion` forever. Track A's
+remaining job is that gap; the adapter and the route change flip over together
+when it closes.
 
 **Directory names.** The repo is `sim/` (aliased `@sim/*`) plus an app-root `lib/`. There is no `packages/`. Track B's package is `ai/`, aliased `@ai/*`. Don't scaffold a second tree because an older draft of this document said `packages/`.
 

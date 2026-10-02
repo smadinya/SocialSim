@@ -14,7 +14,7 @@ npm install
 git checkout -b track-c-event-feed    # your track + what you're doing
 # ...make your changes...
 
-npm run lint && npm run typecheck     # must both pass — see below
+npm run lint && npm run typecheck && npm test   # all three must pass — see below
 git add -A
 git commit -m "Event feed panel renders off-screen moves"
 git push -u origin track-c-event-feed
@@ -34,15 +34,22 @@ Then open a PR on GitHub.
 
 ---
 
-## Run the linter before every merge
+## Run the checks before every merge
 
-Both of these must pass before you open a PR, and again before you merge if you've
+All three must pass before you open a PR, and again before you merge if you've
 pushed anything since:
 
 ```bash
 npm run lint        # eslint via next lint — app, components, lib, sim
 npm run typecheck   # tsc --noEmit
+npm test            # vitest — ai, lib, sim
 ```
+
+The suite is not optional and it is not slow — it runs in a couple of seconds. It
+is also the only one of the three that can tell you the *game* is wrong rather than
+the code: `lib/playtest.test.ts` plays complete runs and asserts on what a scene
+reads like. A green `lint` and `typecheck` over a game where nobody answers anybody
+is exactly the state this repo shipped update 1 in.
 
 `npm run build` also runs ESLint and **fails the build on any lint error**, so a
 lint failure isn't cosmetic — it stops the app from being built at all. Catching it
@@ -96,6 +103,7 @@ needs rotating.
 
 - [ ] `npm run lint` passes
 - [ ] `npm run typecheck` passes
+- [ ] `npm test` passes
 - [ ] `npm run dev` still loads the game at `/`
 - [ ] No `.env*` files, API keys, or `_MACOSX/` in `git status`
 - [ ] You only touched your own track's directories

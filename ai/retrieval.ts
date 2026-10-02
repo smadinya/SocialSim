@@ -1,4 +1,4 @@
-import type { CharacterId, Memory, Move, RelationshipAxis } from "@ai/types";
+import type { CharacterId, Memory, Move, RelationshipAxis } from "@sim/types";
 import { MOCK_EFFECTS } from "@/lib/moveMeta";
 
 /**
@@ -47,14 +47,26 @@ export function tagRelevance(m: Memory, move: Move): number {
 }
 
 /**
- * importance * exp(-decay * age).
- * No floor: the floored-tag convention (betrayal, secret) is Track D's, ask #8.
- * ponytail: plain decay until then — a betrayal from turn 0 still outranks
- * small talk for a while, it just stops doing so eventually.
+ * importance * exp(-decay * age), floored for core memories.
+ *
+ * A MAJOR event never decays past half its write-time importance. Without the
+ * floor, plain exponential decay meant a turn-0 betrayal eventually scored
+ * below yesterday's greeting — the memory survived eviction and then lost
+ * every retrieval, which is the same as not having it.
  */
+export const CORE_FLOOR = 0.5;
+
 export function effectiveImportance(m: Memory, turn: number): number {
   const age = Math.max(0, turn - m.turn);
-  return m.importance * Math.exp(-DECAY * age);
+  const decayed = m.importance * Math.exp(-DECAY * age);
+  return m.core ? Math.max(decayed, m.importance * CORE_FLOOR) : decayed;
+}
+
+/** Is this memory about the thing being discussed? */
+export function topicRelevance(m: Memory, move: Move): number {
+  const topicId = move.args?.topicId as string | undefined;
+  if (!topicId) return 0;
+  return m.topicId === topicId || m.tags.includes(topicId) ? 1 : 0;
 }
 
 export function participantMatch(
@@ -80,6 +92,12 @@ export function axisRelevance(m: Memory, axis: RelationshipAxis | null): number 
   return 0;
 }
 
+/**
+ * Six terms now. `topicRelevance` took weight off `tagRelevance`, which was
+ * derived from the effect table because there was nothing better to key on —
+ * a memory that is literally about the subject under discussion should not
+ * have to win on a tag-name coincidence.
+ */
 export function scoreMemory(
   m: Memory,
   move: Move,
@@ -87,12 +105,11 @@ export function scoreMemory(
   turn: number,
 ): number {
   return (
-    0.3 * tagRelevance(m, move) +
-    0.25 * effectiveImportance(m, turn) +
-    0.2 * participantMatch(m, speaker, move.target) +
-    0.15 * axisRelevance(m, dominantAxis(move.id)) +
-    // `valence` doesn't exist on Memory yet (ask #5). The adapter defaults it
-    // to 0, which drops this term out rather than blocking on it.
+    0.25 * topicRelevance(m, move) +
+    0.2 * tagRelevance(m, move) +
+    0.2 * effectiveImportance(m, turn) +
+    0.15 * participantMatch(m, speaker, move.target) +
+    0.1 * axisRelevance(m, dominantAxis(move.id)) +
     0.1 * Math.abs(m.valence)
   );
 }

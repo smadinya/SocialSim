@@ -2,11 +2,8 @@
 
 import type { CharacterId, WorldState } from "@/lib/viewTypes";
 import { REL_FIELDS } from "@/lib/format";
+import { currentStatus } from "@/lib/relationships";
 import TrustBar from "./TrustBar";
-import {
-  previousRelationshipLabels,
-  relationshipLabels,
-} from "@sim/relationships";
 
 interface Props {
   world: WorldState;
@@ -25,17 +22,22 @@ export default function CharacterInspector({
   const present = world.scene.presentCharacters;
   const character = world.characters[selectedId];
 
-  // All of them, on scene first. Filtering to the scene made the Bob-Calum
-  // relationship unviewable while the feed reported it moving every other turn:
-  // dead information in one panel, invisible consequence in another.
   const relTargets = ids
     .filter((id) => id !== selectedId && character?.relationships[id])
-    .sort(
-      (a, b) => Number(present.includes(b)) - Number(present.includes(a)),
-    );
-  const recentMemories = [...(character?.memories || [])]
+    .sort((a, b) => Number(present.includes(b)) - Number(present.includes(a)));
+
+  const memories = character?.memories ?? [];
+  // Core memories get their own section. Sorting them in with the rest is how
+  // a betrayal ended up below three greetings because the greetings were newer.
+  const core = memories.filter((m) => m.core).sort((a, b) => b.turn - a.turn).slice(0, 4);
+  const recent = memories
+    .filter((m) => !m.core)
     .sort((a, b) => b.turn - a.turn)
     .slice(0, 4);
+
+  const whereName = character
+    ? world.locations[character.location]?.name ?? character.location
+    : "";
 
   return (
     <section className="panel inspector">
@@ -66,8 +68,7 @@ export default function CharacterInspector({
           <>
             <div className="insp-name glow">{character.name}</div>
             <div className="insp-sub">
-              mood: {character.state.mood}
-              {present.includes(selectedId) ? " · on scene" : " · off scene"}
+              mood: {character.state.mood} · {whereName}
             </div>
 
             <div className="insp-label">Goals</div>
@@ -85,24 +86,31 @@ export default function CharacterInspector({
               const rel = character.relationships[id];
               if (!rel) return null;
               const onScene = present.includes(id);
-              const currentLabels = relationshipLabels(rel);
-              const previousLabels = previousRelationshipLabels(rel);
-              const changed = currentLabels.join("|") !== previousLabels.join("|");
+              const status = currentStatus(rel);
+              const last = rel.history[rel.history.length - 1];
               return (
                 <div className={`rel-row ${onScene ? "" : "offscene"}`} key={id}>
                   <div className="rel-name">
                     <span>{world.characters[id].name}</span>
+                    <span className={`pill ${status}`}>{status}</span>
                     {!onScene && <span className="rel-where">off scene</span>}
                   </div>
-                  <div className="rel-labels">
-                    <span>{currentLabels.join(" · ")}</span>
-                    {changed && (
-                      <span className="rel-previous">was {previousLabels.join(" · ")}</span>
-                    )}
-                    {(rel.flags ?? []).map((flag) => (
-                      <span className="rel-flag" key={flag}>{flag}</span>
-                    ))}
-                  </div>
+                  {/* One status, not a label set. Both branches shipped a
+                      renderer for this row: the pill above plus this line come
+                      from `statusFor`, which has the hysteresis that stopped
+                      the feed announcing and un-announcing a friendship inside
+                      three turns, and it is the vocabulary the relationship map
+                      already uses. Track A's `relationshipLabels` is still what
+                      the `sim/` engine scores against — it is just not a second
+                      answer to "are they friends" in the same panel. */}
+                  {last && (
+                    <div className="rel-was">
+                      was {last.was} until turn {last.turn}
+                    </div>
+                  )}
+                  {rel.flags.length > 0 && (
+                    <div className="rel-flags">{rel.flags.join(" · ")}</div>
+                  )}
                   {REL_FIELDS.map((field) => (
                     <TrustBar key={field} field={field} value={rel[field] ?? 0} />
                   ))}
@@ -123,14 +131,31 @@ export default function CharacterInspector({
               </div>
             ))}
 
+            <div className="insp-label">What they won&apos;t forget</div>
+            {core.length === 0 && (
+              <div className="feed-empty">Nothing has stuck yet.</div>
+            )}
+            {core.map((m) => (
+              <div className="memory core" key={m.id}>
+                {m.description}
+                <div className="meta">
+                  turn {m.turn}
+                  {m.tier !== "direct" ? ` · ${m.tier}` : ""}
+                </div>
+              </div>
+            ))}
+
             <div className="insp-label">Recent memories</div>
-            {recentMemories.length === 0 && (
+            {recent.length === 0 && (
               <div className="feed-empty">No memories yet.</div>
             )}
-            {recentMemories.map((m) => (
+            {recent.map((m) => (
               <div className="memory" key={m.id}>
                 {m.description}
-                <div className="meta">turn {m.turn}</div>
+                <div className="meta">
+                  turn {m.turn}
+                  {m.tier !== "direct" ? ` · ${m.tier}` : ""}
+                </div>
               </div>
             ))}
           </>

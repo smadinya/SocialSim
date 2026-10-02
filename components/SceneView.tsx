@@ -3,15 +3,17 @@
 import { useEffect, useRef } from "react";
 import type { SceneLine } from "@/lib/reducer";
 import type { WorldState } from "@/lib/viewTypes";
+import type { TalkingPair } from "@/lib/conversations";
 import { openRequestsForPlayer } from "@/lib/requestMoves";
 
 interface Props {
   scene: SceneLine[];
   world: WorldState;
   playerId: string;
+  pairs: TalkingPair[];
 }
 
-export default function SceneView({ scene, world, playerId }: Props) {
+export default function SceneView({ scene, world, playerId, pairs }: Props) {
   const bodyRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -19,6 +21,7 @@ export default function SceneView({ scene, world, playerId }: Props) {
     if (el) el.scrollTop = el.scrollHeight;
   }, [scene]);
 
+  const here = world.locations[world.scene.location];
   const present = world.scene.presentCharacters
     .map((id) => world.characters[id]?.name || id)
     .join(", ");
@@ -38,17 +41,37 @@ export default function SceneView({ scene, world, playerId }: Props) {
   return (
     <section className="panel scene">
       <div className="panel-head">
-        <span>Scene · {world.scene.location}</span>
+        <span>Scene · {here?.name ?? world.scene.location}</span>
         <span style={{ color: "var(--muted)" }}>{present}</span>
       </div>
+
+      {/* Who is talking to whom, and what about. The header used to be a flat
+          comma list of everyone in the room, which said nothing about which of
+          them were actually in a conversation with each other. */}
+      {pairs.length > 0 && (
+        <div className="talking">
+          {pairs.map((p) => (
+            <span key={p.id} className={`pair ${p.heatLabel ? "hot" : ""}`}>
+              <b>{p.aName}</b> → <b>{p.bName}</b>
+              {p.topicLabel && <span className="pair-topic"> · {p.topicLabel}</span>}
+              {p.heatLabel && <span className="pair-heat"> · {p.heatLabel}</span>}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Track A's conversation record and the open-request stack. Both are
+          empty while the mock engine is the one running, so this renders
+          nothing until the `sim/` port populates them — the pair line above is
+          what the player sees today. */}
       {(conversation || openRequests.length > 0) && (
         <div className="scene-context">
           {conversation && (
             <div className="conversation-summary">
-            <div><b>{participantNames}</b> · {conversation.primaryTopic.summary}</div>
-            <div className="context-meta">
-              next: {expectedName ?? "open"} · {conversation.summary}
-            </div>
+              <div><b>{participantNames}</b> · {conversation.primaryTopic.summary}</div>
+              <div className="context-meta">
+                next: {expectedName ?? "open"} · {conversation.summary}
+              </div>
             </div>
           )}
           {openRequests.length > 0 && (
@@ -76,6 +99,7 @@ export default function SceneView({ scene, world, playerId }: Props) {
           )}
         </div>
       )}
+
       <div className="panel-body scene-history" ref={bodyRef}>
         {scene.map((line) => (
           <div
@@ -86,8 +110,6 @@ export default function SceneView({ scene, world, playerId }: Props) {
           >
             {!line.optimistic && (
               <div className="who">
-                {/* The player has a real name so NPCs can address them, but
-                    their own lines still read as second person. */}
                 {line.speaker === playerId ? "You" : line.speakerName}
               </div>
             )}

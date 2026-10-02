@@ -207,7 +207,7 @@ describe("relationship history and memory", () => {
     state.characters.bob.relationships.alice.respect = 60;
     const result = resolveTick(state, [{ id: "Insult", actor: "alice", target: "bob" }]);
     const relationship = result.state.characters.bob.relationships.alice;
-    expect(relationship.history?.some((entry) => entry.eventId === result.events[0].id)).toBe(true);
+    expect(relationship.axisHistory?.some((entry) => entry.eventId === result.events[0].id)).toBe(true);
     expect(relationship.lastDelta).toBeDefined();
     expect(relationshipLabels(relationship)).not.toContain("friend");
     expect(previousRelationshipLabels(relationship)).toContain("friend");

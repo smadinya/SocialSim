@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import type { PendingUtterance, WorldState } from "@ai/types";
+import type { PendingUtterance, WorldState } from "@sim/types";
 import { FALLBACK_LINES, fallbackLine, toneFor } from "@ai/fallbacks";
 import { cacheClear, cacheGet, cacheKey, cacheSet } from "@ai/cache";
 import { namesUnknownCharacter, realize } from "@ai/realize";
@@ -32,7 +32,12 @@ describe("fallbacks", () => {
   });
 
   it("buckets on relationshipTone — the same three strings the UI renders", () => {
-    expect(toneFor(pending("alice", "Confront", "bob"))).toBe("cold");
+    // Alice reads `neutral` toward Bob on purpose: after the update-1 rewrite
+    // she suspects him and has not concluded, and the tone she speaks in is
+    // how the player is supposed to be able to tell. Dana, who has evidence,
+    // is the one who reads `cold`.
+    expect(toneFor(pending("alice", "Confront", "bob"))).toBe("neutral");
+    expect(toneFor(pending("dana", "Confront", "bob"))).toBe("cold");
     expect(toneFor(pending("calum", "Greet", "dana"))).toBe("neutral");
     expect(toneFor(pending("dana", "Defend", "alice"))).toBe("warm");
   });

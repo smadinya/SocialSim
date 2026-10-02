@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { MoveId, WorldState } from "@ai/types";
+import type { MoveId, WorldState } from "@sim/types";
 import { MOVE_META } from "@/lib/moveMeta";
 import { MOVE_IDS } from "@sim/moves/catalog";
 import { interpret } from "@ai/interpret";

@@ -8,12 +8,16 @@ const seed = () => structuredClone(fixture) as unknown as WorldState;
 describe("cognition patches", () => {
   it("sets, increments and clamps a relationship axis", () => {
     const world = seed();
+    // Read the starting value rather than restating it: the scenario rewrite
+    // moved Alice's trust in Bob and this assertion is about the arithmetic,
+    // not about the fixture.
+    const before = world.characters.alice.relationships.bob.trust;
     applyCognitionPatch(world, {
       op: "increment",
       path: "/characters/alice/relationships/bob/trust",
       value: -5,
     });
-    expect(world.characters.alice.relationships.bob.trust).toBe(13);
+    expect(world.characters.alice.relationships.bob.trust).toBe(before - 5);
 
     applyCognitionPatch(world, {
       op: "increment",

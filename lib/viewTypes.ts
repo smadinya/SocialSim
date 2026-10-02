@@ -3,37 +3,65 @@ import type {
   Move,
   MoveId,
   RelationshipAxis,
-  RelationshipState,
-  SocialRequest,
   SimEvent,
-  TickResult,
   WorldState,
 } from "@sim/types";
 
 export type {
   CharacterId,
   Character,
+  Conversation,
+  ConversationTopic,
+  ConversationTurn,
+  Evidence,
+  Location,
+  LocationId,
   Memory,
+  MemoryTier,
   Belief,
   Move,
   MoveId,
+  PendingRequest,
+  PendingUtterance,
+  RealizedLine,
+  Relationship,
   RelationshipAxis,
   RelationshipDelta,
+  RelationshipEvent,
   RelationshipState,
-  SocialRequest,
+  RelationshipStatus,
+  RelationshipValues,
   ResolvedMove,
+  ScenarioPhase,
   SimEvent,
+  SocialObligation,
+  SocialRequest,
+  SocialRequestStatus,
+  Thread,
+  ThreadBeat,
+  ThreadId,
   TickResult,
+  Topic,
+  TopicId,
   Utterance,
   WorldState,
 } from "@sim/types";
 
-/** Compatibility name used by UI components; values come from Track A. */
-export type Relationship = RelationshipState;
+/**
+ * The numeric axes. Deliberately NOT `keyof Relationship`: that type picked up
+ * `baseline`, `lastDelta`, `flags` and `history` in update 1 and every
+ * `rel[field]` read stopped being a number.
+ */
 export type RelationshipField = RelationshipAxis;
 
 export interface WorldFixture extends WorldState {
   playerId: CharacterId;
+}
+
+export interface SceneLineSource {
+  speaker: CharacterId;
+  moveId: MoveId;
+  line: string;
 }
 
 export interface InterpretResult {
@@ -41,3 +69,6 @@ export interface InterpretResult {
   understoodAs: string;
   ok: boolean;
 }
+
+export type { SimEvent as WorldEvent };
+export type { Move as PlayerMove };

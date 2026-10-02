@@ -1,4 +1,4 @@
-import type { PendingUtterance, RealizedLine } from "@ai/types";
+import type { PendingUtterance, RealizedLine } from "@sim/types";
 import { REALIZE_RESPONSE_SCHEMA, realizePrompt } from "@ai/prompts/realize";
 import { cacheGet, cacheKey, cacheSet } from "@ai/cache";
 import { generateJson, isRetryable, mockMode } from "@ai/client";

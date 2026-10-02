@@ -1,6 +1,7 @@
 import type {
   CharacterId,
   Move,
+  PendingUtterance,
   ResolvedMove,
   TickResult,
   WorldState,
@@ -159,10 +160,18 @@ export function resolveTick(
   next.turn += 1;
   expireRequests(next);
 
-  const pendingUtterances = log
+  const castNames = Object.values(next.characters).map((c) => c.name);
+
+  const pendingUtterances: PendingUtterance[] = log
     .filter((resolved) => resolved.witnessedByPlayer)
     .map((resolved) => {
       const speaker = next.characters[resolved.move.actor];
+      const target = resolved.move.target
+        ? next.characters[resolved.move.target]
+        : undefined;
+      const subject = typeof resolved.move.args?.subject === "string"
+        ? next.characters[resolved.move.args.subject]
+        : undefined;
       return {
         speaker: resolved.move.actor,
         move: resolved.move,
@@ -177,6 +186,19 @@ export function resolveTick(
           .sort((a, b) => b.importance - a.importance || b.turn - a.turn)
           .slice(0, 5),
         witnessedByPlayer: true,
+
+        // The prompt-side fields update 1 made required. `castNames` is the
+        // hallucination check's whitelist, so an empty one fails every line;
+        // `threadBeats` and `heat` belong to the mock engine's `Thread` and
+        // have no equivalent here yet, which is what the zeroes mean.
+        turn: next.turn,
+        speakerName: speaker?.name ?? resolved.move.actor,
+        traits: [...(speaker?.traits ?? [])],
+        targetName: target?.name,
+        subjectName: subject?.name,
+        castNames,
+        threadBeats: [],
+        heat: 0,
       };
     });
 
